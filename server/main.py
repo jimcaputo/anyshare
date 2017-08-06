@@ -2,7 +2,6 @@ import json
 from flask import Flask
 from flask import request
 
-import availability
 import database
 import items
 import items_users
