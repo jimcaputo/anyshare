@@ -68,21 +68,12 @@ def http_status_set():
     return json.dumps(response), int(response['code'])
 
 
-# Check to see if reservations already exist between start and end dates
-@app.route('/availability/<start_date>/<end_date>')
-def http_availability(start_date, end_date):
-    try:
-        response = availability.check(start_date, end_date)
-    except Exception as err:
-        response = {'code': 500, 'message': 'main.py:availability - ' + str(err)}
-    return json.dumps(response), int(response['code'])
-
-
 # GET - Returns list of current reservations for a given item
-@app.route('/reservations/<item_id>', methods=['GET'])
-def http_reservations_get(item_id):
+@app.route('/reservations/<item_id>')
+@app.route('/reservations/<item_id>/<start_date>/<end_date>', methods=['GET'])
+def http_reservations_get(item_id, start_date=None, end_date=None):
     try:
-        response =reservations.get(item_id)
+        response =reservations.get(item_id, start_date, end_date)
     except Exception as err:
         response = {'code': 500, 'message': 'main.py:reservations_get - ' + str(err)}
     return json.dumps(response), int(response['code'])

@@ -25,14 +25,35 @@ class ItemViewController: UIViewController {
         super.viewDidLoad()
         
         navigationItem.title = g_currentItemName
-        
-        // Advance date by 1 day, since you can only reserve in the future
-        datePicker.date.addTimeInterval(24 * 60 * 60)
         datePicker.minimumDate = datePicker.date
 
-        // Get the current status
-        httpGet(url: "/status/" + g_currentItemId)  { json in
-            self.updateStatus(json: json, showAlert: false)
+        
+        // Check to see if the item is reserved for today.  If so, mark the Status as such, and prevent
+        // Activate / De-active.  If not, then fetch the Status.
+        
+        self.labelStatus.text = "Retrieving..."
+        
+        let date = datePicker.date
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: date)
+        
+        httpGet(url: "/reservations/" + g_currentItemId + "/" + dateString + "/" + dateString) { json in
+            DispatchQueue.main.async {
+                let array = json["reservations"] as! Array<AnyObject>
+                if array.count > 0 {
+                    let userName = array[0]["user_name"] as! String
+                    self.labelStatus.text = "Reserved today by " + userName
+                    self.buttonActivate.isEnabled = false
+                    self.buttonDeactivate.isEnabled = false
+                }
+                else {
+                    httpGet(url: "/status/" + g_currentItemId) { json in
+                        self.updateStatus(json: json, showAlert: false)
+                    }
+                    
+                }
+            }
         }
     }
 
@@ -108,14 +129,15 @@ class ItemViewController: UIViewController {
         var dateStartString = dateFormatter.string(from: dateStart)
         var dateEndString = dateFormatter.string(from: dateEnd)
         
-        httpGet(url: "/availability/" + dateStartString + "/" + dateEndString) { json in
+        httpGet(url: "/reservations/" + g_currentItemId + "/" + dateStartString + "/" + dateEndString) { json in
             dateFormatter.dateFormat = "E, MMM d"
             dateStartString = dateFormatter.string(from: dateStart)
             dateEndString = dateFormatter.string(from: dateEnd)
             var availability = dateStartString + " - " + dateEndString + ":  "
             
             DispatchQueue.main.async {
-                if json["availability"] as! String == "true" {
+                let array = json["reservations"] as! Array<AnyObject>
+                if array.count == 0 {
                     availability += "AVAILABLE"
                     self.buttonReserve.isEnabled = true
                 }

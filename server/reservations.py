@@ -4,19 +4,24 @@ import database
 
 
 # Retrieve the list of active reservations for a given item
-def get(item_id):
-    sql = 'SELECT r.date, r.phone_number, u.user_name FROM reservations r ' \
-        'JOIN users u on r.phone_number = u.phone_number ' \
-        'WHERE item_id = {};'.format(item_id)
-    print(sql)
+def get(item_id, start_date, end_date):
+    if start_date != None  and  end_date != None:
+        sql = 'SELECT r.date, r.phone_number, u.user_name FROM reservations r ' \
+            'JOIN users u on r.phone_number = u.phone_number ' \
+            'WHERE item_id = {} AND date BETWEEN "{}" AND "{}";' \
+            .format(item_id, start_date, end_date)
+    else:
+         sql = 'SELECT r.date, r.phone_number, u.user_name FROM reservations r ' \
+            'JOIN users u on r.phone_number = u.phone_number ' \
+            'WHERE item_id = {};'.format(item_id)
     rows, response = database.read(sql)
 
     if response == 'Success':
         reservations = []
  
-        # Append all reservations with a date greater than today
+        # Append all reservations with a date greater than or equal to today
         for row in rows:
-            if row[0] > datetime.date(datetime.now()):
+            if row[0] >= datetime.date(datetime.now()):
                 reservations.append({
                     'date': row[0].strftime('%Y-%m-%d'),
                     'phone_number': row[1],
