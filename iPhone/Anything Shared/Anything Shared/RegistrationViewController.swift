@@ -62,7 +62,7 @@ class RegistrationViewController: UIViewController {
     }
     
     @IBAction func buttonValidate(_ sender: UIButton) {
-        let dict = ["phone_number": textPhoneNumber.text, "validation_code": textValidationCode.text]
+        let dict = ["phone_number": validatePhoneNumber(phoneNumber: textPhoneNumber.text!), "validation_code": textValidationCode.text]
         httpRequest(url: "/users", method: "PATCH", body: dict) { json in
             UserDefaults.standard.set(self.textUserName.text, forKey: "UserName")
             UserDefaults.standard.set(self.textPhoneNumber.text, forKey: "PhoneNumber")

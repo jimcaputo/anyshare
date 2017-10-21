@@ -23,10 +23,12 @@ class ItemViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
         navigationItem.title = g_currentItemName
         datePicker.minimumDate = datePicker.date
-
+        
         
         // Check to see if the item is reserved for today.  If so, mark the Status as such, and prevent
         // Activate / De-active.  If not, then fetch the Status.

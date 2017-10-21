@@ -13,6 +13,8 @@ import UIKit
 
 class ManageUsersViewController: UIViewController, CNContactPickerDelegate, UITableViewDataSource, UITableViewDelegate {
     
+    @IBOutlet weak var textPhoneNumber: UITextField!
+    @IBOutlet weak var textUserName: UITextField!
     @IBOutlet weak var tableViewUsers: UITableView!
     
     override func viewDidLoad() {
@@ -25,7 +27,7 @@ class ManageUsersViewController: UIViewController, CNContactPickerDelegate, UITa
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func buttonAddUsers(_ sender: UIButton) {
+    @IBAction func buttonContacts(_ sender: UIButton) {
         let contactPickerViewController = CNContactPickerViewController()
         contactPickerViewController.displayedPropertyKeys = ["phoneNumbers"]
         contactPickerViewController.delegate = self
@@ -33,8 +35,13 @@ class ManageUsersViewController: UIViewController, CNContactPickerDelegate, UITa
     }
     
     func contactPicker(_ picker: CNContactPickerViewController, didSelect contactProperty: CNContactProperty) {
-        let userName = contactProperty.contact.givenName
-        let phoneNumber = stripPhoneNumber(phoneNumber: (contactProperty.value as! CNPhoneNumber).stringValue)
+        textPhoneNumber.text = stripPhoneNumber(phoneNumber: (contactProperty.value as! CNPhoneNumber).stringValue)
+        textUserName.text = contactProperty.contact.givenName
+    }
+    
+    @IBAction func buttonAddUser(_ sender: Any) {
+        let phoneNumber = textPhoneNumber.text!
+        let userName = textUserName.text!
         
         let dict = ["item_id": g_currentItemId, "phone_number": phoneNumber, "user_name": userName]
         httpRequest(url: "/items_users", method: "POST", body: dict) { json in
@@ -44,6 +51,8 @@ class ManageUsersViewController: UIViewController, CNContactPickerDelegate, UITa
             self.users += [user]
             DispatchQueue.main.async {
                 self.tableViewUsers.reloadData()
+                self.textPhoneNumber.text = ""
+                self.textUserName.text = ""
             }
         }
     }

@@ -12,6 +12,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     @IBOutlet weak var tableViewItems: UITableView!
     @IBOutlet weak var textName: UITextField!
+    @IBOutlet weak var textServer: UITextField!
     @IBOutlet weak var pickerUser: UIPickerView!
     
     struct Item {
@@ -25,7 +26,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Ensure access to contacts
+        // Ask for access to contacts
         requestAccessToContacts()
         
         g_userName = UserDefaults.standard.object(forKey: "UserName") as? String
@@ -111,6 +112,16 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
+    @IBAction func buttonSetServer(_ sender: UIButton) {
+        if textServer.text == "" {
+            return
+        }
+        g_server = textServer.text!
+        if g_userName != nil {
+            loadItems()
+            loadUsers()
+        }
+    }
     
     struct User {
         var userName = ""

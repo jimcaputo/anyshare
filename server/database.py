@@ -1,6 +1,8 @@
 import MySQLdb
 
 
+# USER = 'anyshare'
+# PASSWORD = 'anyshare_password'
 USER = 'root'
 PASSWORD = 'root_password'
 DATABASE = 'anyshare'
@@ -84,13 +86,6 @@ DELETE FROM items_users WHERE item_id = p_item_id;
 END $$
 DELIMITER ; $$
 
-DELIMITER $$
-CREATE PROCEDURE item_set_status(p_item_id INT, p_status BOOLEAN, p_phone_number VARCHAR(20)
-BEGIN
-UPDATE items SET status = p_status AND active_phone_number = p_phone_number WHERE item_id = p_item_id;
-SELECT i.status, i.active_phone_number, 
-END $$
-DELIMITER ; $$
 
 
 CREATE TABLE users

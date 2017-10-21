@@ -11,7 +11,9 @@ import Foundation
 import UIKit
 
 
-let SERVER = "http://127.0.0.1:8080"
+var g_server = "http://127.0.0.1:8080"
+//var g_server = "http://192.168.1.200:8080"
+//var g_server = "http://lakeuniontech.asuscomm.com:8080"
 
 var g_userName: String!
 var g_phoneNumber: String!
@@ -61,7 +63,7 @@ public func validatePhoneNumber(phoneNumber: String) -> String! {
 
 
 public func httpGet(url: String, callback: @escaping (_ json: Dictionary<String, AnyObject>)->()) {
-    let url = URL(string: SERVER + url)!
+    let url = URL(string: g_server + url)!
     let task = URLSession.shared.dataTask(with: url, completionHandler: { data, response, error in
         let json = handleResponse(error: error, data: data)
         if json != nil {
@@ -74,7 +76,7 @@ public func httpGet(url: String, callback: @escaping (_ json: Dictionary<String,
 
 public func httpRequest(url: String, method: String, body: Any? = nil,
                         callback: @escaping (_ json: Dictionary<String, AnyObject>)->()) {
-    var request = URLRequest(url: URL(string: SERVER + url)!)
+    var request = URLRequest(url: URL(string: g_server + url)!)
     request.httpMethod = method
     request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
     if (body != nil) {

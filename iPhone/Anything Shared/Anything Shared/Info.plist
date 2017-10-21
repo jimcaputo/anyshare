@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSContactsUsageDescription</key>
-	<string>Access to Contacts is necessary to enable finding and sharing with other users</string>
+	<string>Access to Contacts simplifies selection of other sharing users</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>

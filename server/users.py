@@ -53,6 +53,7 @@ def validate(request):
 	user = request.get_json()
 	sql = 'SELECT validation_code FROM validation_codes WHERE phone_number = "{}" AND validation_code = "{}";' \
 		.format(user['phone_number'], user['validation_code'])
+	print(sql)
 	rows, response = database.read(sql)
 
 	if response == 'Success':
