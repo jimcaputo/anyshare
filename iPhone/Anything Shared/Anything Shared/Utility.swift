@@ -11,9 +11,9 @@ import Foundation
 import UIKit
 
 
-var g_server = "http://127.0.0.1:8080"
+//var g_server = "http://127.0.0.1:8080"
 //var g_server = "http://192.168.1.200:8080"
-//var g_server = "http://lakeuniontech.asuscomm.com:8080"
+var g_server = "http://lakeuniontech.asuscomm.com:8080"
 
 var g_userName: String!
 var g_phoneNumber: String!
@@ -24,15 +24,15 @@ var g_accessToContacts: Bool = false
 
 public func stripPhoneNumber(phoneNumber: String) -> String {
     var result = ""
-    for ch in phoneNumber.characters {
+    for (_, ch) in phoneNumber.enumerated() {
         if ch >= "0" && ch <= "9" {
             result += String(ch)
         }
     }
-    if result.characters.count != 10 {
+    if result.count != 10 {
         return "Invalid"
     }
-    result = result.substring(from: result.index(result.endIndex, offsetBy: -10))
+    result = String(result.suffix(10))
     return result
 }
 
@@ -40,7 +40,7 @@ public func stripPhoneNumber(phoneNumber: String) -> String {
 public func formatPhoneNumber(phoneNumber: String) -> String {
     var result = ""
     var i = 0
-    for ch in phoneNumber.characters {
+    for (_, ch) in phoneNumber.enumerated() {
         if i == 3  ||  i == 6 {
             result += "-"
         }
@@ -52,8 +52,8 @@ public func formatPhoneNumber(phoneNumber: String) -> String {
 
 
 public func validatePhoneNumber(phoneNumber: String) -> String! {
-    var phoneNumberStripped = stripPhoneNumber(phoneNumber: phoneNumber)
-    for ch in phoneNumberStripped.characters {
+    let phoneNumberStripped = stripPhoneNumber(phoneNumber: phoneNumber)
+    for (_, ch) in phoneNumberStripped.enumerated() {
         if !(ch >= "0" && ch <= "9") {
             return nil
         }

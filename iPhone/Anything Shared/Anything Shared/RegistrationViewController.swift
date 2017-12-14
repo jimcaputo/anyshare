@@ -40,7 +40,7 @@ class RegistrationViewController: UIViewController {
             return
         }
         let userName = textUserName.text!
-        if userName.characters.count < 2 || userName.characters.count > 15 {
+        if userName.count < 2 || userName.count > 15 {
             showMessage(viewController: self, title: "Invalid user name",
                 message: userName + " is not a valid user name.  Please enter a user name longer than 2 characters and less than 15 characters.",
                 autoClose: false)
@@ -64,11 +64,11 @@ class RegistrationViewController: UIViewController {
     @IBAction func buttonValidate(_ sender: UIButton) {
         let dict = ["phone_number": validatePhoneNumber(phoneNumber: textPhoneNumber.text!), "validation_code": textValidationCode.text]
         httpRequest(url: "/users", method: "PATCH", body: dict) { json in
-            UserDefaults.standard.set(self.textUserName.text, forKey: "UserName")
-            UserDefaults.standard.set(self.textPhoneNumber.text, forKey: "PhoneNumber")
-            g_userName = self.textUserName.text
-            g_phoneNumber = self.textPhoneNumber.text
             DispatchQueue.main.async {
+                UserDefaults.standard.set(self.textUserName.text, forKey: "UserName")
+                UserDefaults.standard.set(self.textPhoneNumber.text, forKey: "PhoneNumber")
+                g_userName = self.textUserName.text
+                g_phoneNumber = self.textPhoneNumber.text
                 self.dismiss(animated: true, completion: nil)
             }
         }

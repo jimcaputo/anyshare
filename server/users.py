@@ -29,7 +29,6 @@ def create(request):
 	user = request.get_json()
 	validation_code = randint(1001, 9999)
 	sql = 'CALL create_user("{}", "{}", "{}");'.format(user['phone_number'], user['user_name'], validation_code)
-
 	response, _ = database.insert_update_delete(sql)
 
 	# If a new row is created, or if one already exists (meaning, the user is simply setting up the app again, 
@@ -41,7 +40,7 @@ def create(request):
 	#   successfully validates via the registration flow. 
 	if response == 'Success':
 		print('Validation Code: ' + str(validation_code))
-		#sms.send('+1' + user['phone_number'], 'Anything Shared validation code: {}'.format(validation_code))
+		sms.send('+1' + user['phone_number'], 'Anything Shared validation code: {}'.format(validation_code))
 		response = {'code': 200}
 	else:
    		response = {'code': 500, 'message': 'users.py:create - ' + response}
@@ -53,7 +52,6 @@ def validate(request):
 	user = request.get_json()
 	sql = 'SELECT validation_code FROM validation_codes WHERE phone_number = "{}" AND validation_code = "{}";' \
 		.format(user['phone_number'], user['validation_code'])
-	print(sql)
 	rows, response = database.read(sql)
 
 	if response == 'Success':

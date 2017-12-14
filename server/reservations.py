@@ -8,12 +8,13 @@ def get(item_id, start_date, end_date):
     if start_date != None  and  end_date != None:
         sql = 'SELECT r.date, r.phone_number, u.user_name FROM reservations r ' \
             'JOIN users u on r.phone_number = u.phone_number ' \
-            'WHERE item_id = {} AND date BETWEEN "{}" AND "{}";' \
+            'WHERE item_id = {} AND date BETWEEN "{}" AND "{}" ' \
+            'ORDER BY r.date;' \
             .format(item_id, start_date, end_date)
     else:
          sql = 'SELECT r.date, r.phone_number, u.user_name FROM reservations r ' \
             'JOIN users u on r.phone_number = u.phone_number ' \
-            'WHERE item_id = {};'.format(item_id)
+            'WHERE item_id = {} ORDER BY r.date;'.format(item_id)
     rows, response = database.read(sql)
 
     if response == 'Success':
@@ -42,8 +43,6 @@ def create(request):
     for reservation in reservations:
         sql += '({}, "{}", "{}"), '.format(reservation['item_id'], reservation['date'], reservation['phone_number'])
     sql = sql[:-2] + ';'
-    print(sql)
-    
     response, _ = database.insert_update_delete(sql)
 
     if response == 'Success':
