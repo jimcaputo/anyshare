@@ -4,8 +4,14 @@
 <head>
   <title>AnyShare</title>
   <script src="https://unpkg.com/vue"></script>
-  
 
+  <style type="text/css">
+    .pseudoLink { 
+      color:blue; 
+      text-decoration:underline; 
+      cursor:pointer; 
+    }
+  </style>
 </head>
 
 <body>
@@ -13,23 +19,33 @@
     <table>
       <tr v-for="user in users">
         <td>
-          <button v-on:click="user_onClick(user)">
-            {{ user.user_name }} - {{ user.phone_number}}
-          </button>
+          <span v-on:click="user_onClick(user)" class="pseudoLink">
+            {{ user.user_name }} ({{ user.phone_number}})
+          </a>
         </td>
       </tr>
+    </table>
   </div>
 
   <div id="item_list" style="display: none">
     <table>
       <tr v-for="item in items">
-        <td><button v-on:click="item_onClick(item)">{{ item.name }}</button></td>
+        <td>
+          <span v-on:click="item_onClick(item)" class="pseudoLink">
+            {{ item.name }}
+          </span>
+        </td>
       </tr>
     </table>
   </div>
 
   <div id="item_view" style="display: none">
-    asfjklasfjklsfjkl
+    <span v-if="!status.active">Current Status: Inactive</span>
+    <span v-if="status.active">Current Status: Active - {{ user_name }}</span>
+    <br>
+    <span v-if="!status.active" v-on:click="activate()" class="pseudoLink">Activate</span>
+    <span v-if="status.active" v-on:click="deactivate()" class="pseudoLink">Deactivate</span>
+
   </div>
 
   <script src="anyshare.js"></script>
