@@ -15,6 +15,13 @@
 </head>
 
 <body>
+  <div id="navigation">
+    <span v-on:click="onClick()" class="pseudoLink">
+      {{ page_name }}
+    </span>
+    <p>
+  </div>
+
   <div id="user_list" style="display: none">
     <table>
       <tr v-for="user in users">
@@ -40,12 +47,14 @@
   </div>
 
   <div id="item_view" style="display: none">
-    <span v-if="!status.active">Current Status: Inactive</span>
-    <span v-if="status.active">Current Status: Active - {{ user_name }}</span>
-    <br>
-    <span v-if="!status.active" v-on:click="activate()" class="pseudoLink">Activate</span>
-    <span v-if="status.active" v-on:click="deactivate()" class="pseudoLink">Deactivate</span>
-
+    <div v-if="status.active == 'false'">
+      <span>Current Status: Inactive</span><br>
+      <span v-on:click="activate()" class="pseudoLink">Activate</span>
+    </div>
+    <div v-if="status.active == 'true'">
+      <span>Current Status: Active - {{ status.user_name }}</span><br>
+      <span v-on:click="deactivate()" class="pseudoLink">Deactivate</span>
+    </div>
   </div>
 
   <script src="anyshare.js"></script>
