@@ -1,53 +1,62 @@
-//var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
-var SERVER = 'http://127.0.0.1:8080';
+var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
+//var SERVER = 'http://127.0.0.1:8080';
 
 var APP_STATE = {
     USER_LIST: 'USER_LIST',
     ITEM_LIST: 'ITEM_LIST',
     ITEM_VIEW: 'ITEM_VIEW',
+    RESERVATIONS: 'RESERVATIONS'
 };
 
 
 var g_currentUserPhone;
 var g_currentUserName;
 var g_currentItemId;
-var g_currentAppState;
 
+
+function formatDate(date) {
+    date = date.getUTCFullYear() + '-' + (date.getUTCMonth() + 1) + '-' + date.getUTCDate();
+    return date;
+}
 
 function updateAppState(appState) {
-  g_currentAppState = appState;
+  v_navigation.app_state = appState;
 
   v_user_list.$el.style.display = 'none';
   v_item_view.$el.style.display = 'none';
   v_item_list.$el.style.display = 'none';
+  v_reservations.$el.style.display = 'none';
 
   if (appState == APP_STATE.USER_LIST) {
-    v_user_list.$el.style.display = "block"; 
-    v_navigation.page_name = '';
-  } 
+    v_user_list.$el.style.display = "block";
+  }
   else if (appState == APP_STATE.ITEM_LIST) {
     v_item_list.$el.style.display = 'block';
-    v_navigation.page_name = 'User List';
   }
   else if (appState == APP_STATE.ITEM_VIEW) {
-    v_item_view.$el.style.display = 'block'; 
-    v_navigation.page_name = 'Item List';
+    v_item_view.$el.style.display = 'block';
+  }
+  else if (appState == APP_STATE.RESERVATIONS) {
+    v_reservations.$el.style.display = 'block';
   }
 }
 
 var v_navigation = new Vue({
   el: '#navigation',
   data: {
-    page_name: ''
+    app_state: ''
   },
   methods: {
     onClick: function() {
-      if (g_currentAppState == APP_STATE.ITEM_LIST) {
+      if (this.app_state == APP_STATE.ITEM_LIST) {
         updateAppState(APP_STATE.USER_LIST);
-      } 
-      else if (g_currentAppState == APP_STATE.ITEM_VIEW) {
+      }
+      else if (this.app_state == APP_STATE.ITEM_VIEW) {
         updateAppState(APP_STATE.ITEM_LIST);
-      } 
+      }
+      else if (this.app_state == APP_STATE.RESERVATIONS) {
+        updateAppState(APP_STATE.ITEM_VIEW);
+      }
     }
   }
 });
@@ -63,7 +72,7 @@ var v_user_list = new Vue({
       g_currentPhoneNumber = user.phone_number;
       fetch(SERVER + '/items/' + user.phone_number).then(function(response) {
         return response.json();
-      }).then(function(json) { 
+      }).then(function(json) {
         v_item_list.items = json.items;
         updateAppState(APP_STATE.ITEM_LIST);
       });
@@ -79,11 +88,11 @@ var v_item_list = new Vue({
   methods: {
     item_onClick: function(item) {
       g_currentItemId = item.item_id;
-      fetch(SERVER + '/status/' + item.item_id).then(function(response) {
+      fetch(SERVER + '/status/' + g_currentItemId).then(function(response) {
         return response.json();
-      }).then(function(json) { 
+      }).then(function(json) {
         v_item_view.status = json.status;
-        updateAppState(APP_STATE.ITEM_VIEW);  
+        updateAppState(APP_STATE.ITEM_VIEW);
       });
     }
   }
@@ -96,6 +105,16 @@ var v_item_view = new Vue({
       active: 'false',
       phone_number: '',
       user_name: ''
+    },
+    date: '',
+    days: 0,
+    available: false
+  },
+  created: function() {
+    this.date = formatDate(new Date());
+  },
+  methods: {
+     activate_onClick: function() {
     }
   },
   methods: {
@@ -120,7 +139,7 @@ var v_item_view = new Vue({
         vue.status.user_name = g_currentUserName;
       });
     },
-    deactivate: function() {
+    deactivate_onClick: function() {
       var json = {
         item_id: g_currentItemId,
         active: 'false',
@@ -138,14 +157,82 @@ var v_item_view = new Vue({
       }).then(function(response) {
         vue.status.active = 'false';
       });
+    },
+    reservations_onClick: function() {
+      fetch(SERVER + '/reservations/' + g_currentItemId).then(function(response) {
+        return response.json();
+      }).then(function(json) {
+        v_reservations.current_phone_number = g_currentPhoneNumber;
+        v_reservations.reservations = json.reservations;
+        updateAppState(APP_STATE.RESERVATIONS);
+      });
+    },
+    updateAvailability: function() {
+      if (this.days == 0) {
+        this.days = 1;
+      }
+
+      var startDate = new Date(this.date);
+      var endDate = new Date(startDate);
+      endDate.setTime(endDate.getTime() + this.days * 24 * 60 * 60 * 1000);
+
+      var vue = this;
+
+      var url = SERVER + '/reservations/' + g_currentItemId + '/' +
+          formatDate(startDate) + '/' + formatDate(endDate);
+      fetch(url).then(function(response) {
+        return response.json();
+      }).then(function(json) {
+        if (json.reservations.length > 0) {
+          vue.available = false;
+        }
+        else {
+          vue.available = true;
+        }
+      });
+    },
+    reserve_onClick: function() {
+      var reservations = [];
+      var date = new Date(this.date);
+
+      for (var i = 0; i < this.days; i++) {
+        reservations.push({
+          item_id: g_currentItemId,
+          date: formatDate(date),
+          phone_number: g_currentPhoneNumber
+        });
+        date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
+      }
+
+      var vue = this;
+
+      fetch(SERVER + '/reservations', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(reservations)
+      }).then(function(response) {
+        vue.date = formatDate(new Date());
+        vue.days = 0;
+      });
     }
   }
 });
 
 
+var v_reservations = new Vue({
+  el: '#reservations',
+  data: {
+    current_phone_number: '',
+    reservations: []
+  }
+});
+
 fetch(SERVER + '/users').then(function(response) {
   return response.json();
-}).then(function(json) { 
+}).then(function(json) {
   v_user_list.users = json.users;
 });
 

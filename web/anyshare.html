@@ -6,10 +6,10 @@
   <script src="https://unpkg.com/vue"></script>
 
   <style type="text/css">
-    .pseudoLink { 
-      color:blue; 
-      text-decoration:underline; 
-      cursor:pointer; 
+    .pseudoLink {
+      color:blue;
+      text-decoration:underline;
+      cursor:pointer;
     }
   </style>
 </head>
@@ -17,7 +17,17 @@
 <body>
   <div id="navigation">
     <span v-on:click="onClick()" class="pseudoLink">
-      {{ page_name }}
+      <div v-if="app_state == 'USER_LIST'">
+      </div>
+      <div v-else-if="app_state == 'ITEM_LIST'">
+        User List
+      </div>
+      <div v-else-if="app_state == 'ITEM_VIEW'">
+        Item List
+      </div>
+      <div v-else-if="app_state == 'RESERVATIONS'">
+        Item View
+      </div>
     </span>
     <p>
   </div>
@@ -49,12 +59,45 @@
   <div id="item_view" style="display: none">
     <div v-if="status.active == 'false'">
       <span>Current Status: Inactive</span><br>
-      <span v-on:click="activate()" class="pseudoLink">Activate</span>
+      <span v-on:click="activate_onClick()" class="pseudoLink">Activate</span>
     </div>
     <div v-if="status.active == 'true'">
       <span>Current Status: Active - {{ status.user_name }}</span><br>
-      <span v-on:click="deactivate()" class="pseudoLink">Deactivate</span>
+      <span v-on:click="deactivate_onClick()" class="pseudoLink">Deactivate</span>
     </div>
+    <p>
+    <span v-on:click="reservations_onClick()" class="pseudoLink">Existing Reservations</span>
+    <p>
+    <p>
+    Make a Reservation
+    <br>
+    Start Date:
+    <input v-on:change="updateAvailability()" v-model="date" type="date" :min="date">
+    <br>
+    Number of Days
+    <input v-on:change="updateAvailability()" v-model="days" type="number" min="0">
+    <br>
+    <div v-if="days > 0">
+      <span v-if="available">Available</span>
+      <span v-if="!available">Unavailable</span>
+    </div>
+    <br>
+    <input v-on:click="reserve_onClick()" :disabled="!available" type="button" value="Reserve">
+  </div>
+
+  <div id="reservations" style="display:none">
+    <table>
+      <tr v-for="reservation in reservations">
+        <td>{{ reservation.date }}</td>
+        <td>{{ reservation.user_name }}</td>
+        <td>
+          <span v-if="reservation.phone_number == current_phone_number"
+              v-on:click="delete_onClick(reservation)" class="pseudoLink">
+            Delete
+          </span>
+        </td>
+      </tr>
+    </table>
   </div>
 
   <script src="anyshare.js"></script>
