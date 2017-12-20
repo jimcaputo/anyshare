@@ -114,17 +114,12 @@ var v_item_view = new Vue({
     this.date = formatDate(new Date());
   },
   methods: {
-     activate_onClick: function() {
-    }
-  },
-  methods: {
-    activate: function() {
-      var json = {
+    activate_onClick: function() {
+       var json = {
         item_id: g_currentItemId,
         active: 'true',
         phone_number: g_currentPhoneNumber
       };
-      var vue = this;
 
       fetch(SERVER + '/status', {
         method: 'POST',
@@ -133,10 +128,10 @@ var v_item_view = new Vue({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(json)
-      }).then(function(response) {
-        vue.status.active = 'true';
-        vue.status.phone_number = g_currentPhoneNumber;
-        vue.status.user_name = g_currentUserName;
+      }).then((response) => {
+        this.status.active = 'true';
+        this.status.phone_number = g_currentPhoneNumber;
+        this.status.user_name = g_currentUserName;
       });
     },
     deactivate_onClick: function() {
@@ -145,7 +140,6 @@ var v_item_view = new Vue({
         active: 'false',
         phone_number: ''
       };
-      var vue = this;
 
       fetch(SERVER + '/status', {
         method: 'POST',
@@ -154,8 +148,8 @@ var v_item_view = new Vue({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(json)
-      }).then(function(response) {
-        vue.status.active = 'false';
+      }).then((response) => {
+        this.status.active = 'false';
       });
     },
     reservations_onClick: function() {
@@ -176,18 +170,16 @@ var v_item_view = new Vue({
       var endDate = new Date(startDate);
       endDate.setTime(endDate.getTime() + this.days * 24 * 60 * 60 * 1000);
 
-      var vue = this;
-
       var url = SERVER + '/reservations/' + g_currentItemId + '/' +
           formatDate(startDate) + '/' + formatDate(endDate);
-      fetch(url).then(function(response) {
+      fetch(url).then((response) => {
         return response.json();
-      }).then(function(json) {
+      }).then((json) => {
         if (json.reservations.length > 0) {
-          vue.available = false;
+          this.available = false;
         }
         else {
-          vue.available = true;
+          this.available = true;
         }
       });
     },
@@ -204,8 +196,6 @@ var v_item_view = new Vue({
         date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
       }
 
-      var vue = this;
-
       fetch(SERVER + '/reservations', {
         method: 'POST',
         headers: {
@@ -213,9 +203,9 @@ var v_item_view = new Vue({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(reservations)
-      }).then(function(response) {
-        vue.date = formatDate(new Date());
-        vue.days = 0;
+      }).then((response) => {
+        this.date = formatDate(new Date());
+        this.days = 0;
       });
     }
   }
@@ -227,6 +217,16 @@ var v_reservations = new Vue({
   data: {
     current_phone_number: '',
     reservations: []
+  },
+  methods: {
+    delete_onClick: function(reservation) {
+      fetch(SERVER + '/reservations/' + g_currentItemId + '/' + reservation.date, {
+        method: 'DELETE',
+      }).then((response) => {
+        var i = this.reservations.indexOf(reservation);
+        this.reservations.splice(i, 1);
+      });
+    }
   }
 });
 
