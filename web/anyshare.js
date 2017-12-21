@@ -39,6 +39,7 @@ function updateAppState(appState) {
   else if (appState == APP_STATE.RESERVATIONS) {
     v_reservations.$el.style.display = 'block';
   }
+  log('updateAppState: Transitioning to APP_STATE.' + appState);
 }
 
 var v_navigation = new Vue({
@@ -70,6 +71,8 @@ var v_user_list = new Vue({
     user_onClick: function(user) {
       g_currentUserName = user.user_name;
       g_currentPhoneNumber = user.phone_number;
+
+      log('v_user_list.user_onClick: fetch - /items/' + user.phone_number);
       fetch(SERVER + '/items/' + user.phone_number).then(function(response) {
         return response.json();
       }).then(function(json) {
@@ -88,6 +91,8 @@ var v_item_list = new Vue({
   methods: {
     item_onClick: function(item) {
       g_currentItemId = item.item_id;
+
+      log('v_item_list.items_onClick: fetch - /status/' + g_currentItemId);
       fetch(SERVER + '/status/' + g_currentItemId).then(function(response) {
         return response.json();
       }).then(function(json) {
@@ -230,6 +235,37 @@ var v_reservations = new Vue({
   }
 });
 
+
+function httpGet(url, callback) {
+  log('httpGet: ' + url);
+  fetch(url)
+    .then(
+      function(response) {
+        if (response.status != 200) {
+          log('httpGet:  Fetch failure. Status Code: ' + response.status);
+          return;
+        }
+
+        // Examine the text in the response
+        response.json().then(function(data) {
+          console.log(data);
+        });
+      }
+    )
+    .catch(function(err) {
+      log('httpGet: Fetch error :-S', err);
+    });
+}
+
+
+function log(text) {
+  var date = new Date();
+  div = document.getElementById('logs');
+  div.innerText = date.toLocaleTimeString() + ' - ' + text + '\n' + div.innerText;
+}
+
+
+log('main: fetch /users');
 fetch(SERVER + '/users').then(function(response) {
   return response.json();
 }).then(function(json) {
