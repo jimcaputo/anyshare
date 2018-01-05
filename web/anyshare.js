@@ -1,5 +1,5 @@
-var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
-//var SERVER = 'http://127.0.0.1:8080';
+//var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
+var SERVER = 'http://127.0.0.1:8080';
 
 var APP_STATE = {
     USER_LIST: 'USER_LIST',
@@ -48,16 +48,8 @@ var v_navigation = new Vue({
     app_state: ''
   },
   methods: {
-    onClick: function() {
-      if (this.app_state == APP_STATE.ITEM_LIST) {
-        updateAppState(APP_STATE.USER_LIST);
-      }
-      else if (this.app_state == APP_STATE.ITEM_VIEW) {
-        updateAppState(APP_STATE.ITEM_LIST);
-      }
-      else if (this.app_state == APP_STATE.RESERVATIONS) {
-        updateAppState(APP_STATE.ITEM_VIEW);
-      }
+    onClick: function(appState) {
+      updateAppState(appState);
     }
   }
 });
@@ -71,11 +63,7 @@ var v_user_list = new Vue({
     user_onClick: function(user) {
       g_currentUserName = user.user_name;
       g_currentPhoneNumber = user.phone_number;
-
-      log('v_user_list.user_onClick: fetch - /items/' + user.phone_number);
-      fetch(SERVER + '/items/' + user.phone_number).then(function(response) {
-        return response.json();
-      }).then(function(json) {
+      httpGet('/items/' + user.phone_number, function(json) {
         v_item_list.items = json.items;
         updateAppState(APP_STATE.ITEM_LIST);
       });
@@ -91,11 +79,7 @@ var v_item_list = new Vue({
   methods: {
     item_onClick: function(item) {
       g_currentItemId = item.item_id;
-
-      log('v_item_list.items_onClick: fetch - /status/' + g_currentItemId);
-      fetch(SERVER + '/status/' + g_currentItemId).then(function(response) {
-        return response.json();
-      }).then(function(json) {
+      httpGet('/status/' + g_currentItemId, function(json) {
         v_item_view.status = json.status;
         updateAppState(APP_STATE.ITEM_VIEW);
       });
@@ -125,15 +109,7 @@ var v_item_view = new Vue({
         active: 'true',
         phone_number: g_currentPhoneNumber
       };
-
-      fetch(SERVER + '/status', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(json)
-      }).then((response) => {
+      httpPost('/status', JSON.stringify(json), () => {
         this.status.active = 'true';
         this.status.phone_number = g_currentPhoneNumber;
         this.status.user_name = g_currentUserName;
@@ -145,22 +121,12 @@ var v_item_view = new Vue({
         active: 'false',
         phone_number: ''
       };
-
-      fetch(SERVER + '/status', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(json)
-      }).then((response) => {
+      httpPost('/status', JSON.stringify(json), () => {
         this.status.active = 'false';
       });
     },
     reservations_onClick: function() {
-      fetch(SERVER + '/reservations/' + g_currentItemId).then(function(response) {
-        return response.json();
-      }).then(function(json) {
+      httpGet('/reservations/' + g_currentItemId, function(json) {
         v_reservations.current_phone_number = g_currentPhoneNumber;
         v_reservations.reservations = json.reservations;
         updateAppState(APP_STATE.RESERVATIONS);
@@ -175,11 +141,9 @@ var v_item_view = new Vue({
       var endDate = new Date(startDate);
       endDate.setTime(endDate.getTime() + this.days * 24 * 60 * 60 * 1000);
 
-      var url = SERVER + '/reservations/' + g_currentItemId + '/' +
+      var url = '/reservations/' + g_currentItemId + '/' + 
           formatDate(startDate) + '/' + formatDate(endDate);
-      fetch(url).then((response) => {
-        return response.json();
-      }).then((json) => {
+      httpGet(url, (json) => {
         if (json.reservations.length > 0) {
           this.available = false;
         }
@@ -201,16 +165,10 @@ var v_item_view = new Vue({
         date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
       }
 
-      fetch(SERVER + '/reservations', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(reservations)
-      }).then((response) => {
+      httpPost('/reservations', JSON.stringify(reservations), () => {
         this.date = formatDate(new Date());
         this.days = 0;
+        this.available = false;
       });
     }
   }
@@ -225,9 +183,7 @@ var v_reservations = new Vue({
   },
   methods: {
     delete_onClick: function(reservation) {
-      fetch(SERVER + '/reservations/' + g_currentItemId + '/' + reservation.date, {
-        method: 'DELETE',
-      }).then((response) => {
+      httpDelete('/reservations/' + g_currentItemId + '/' + reservation.date, () => {
         var i = this.reservations.indexOf(reservation);
         this.reservations.splice(i, 1);
       });
@@ -238,22 +194,67 @@ var v_reservations = new Vue({
 
 function httpGet(url, callback) {
   log('httpGet: ' + url);
-  fetch(url)
+  fetch(SERVER + url)
     .then(
       function(response) {
         if (response.status != 200) {
           log('httpGet:  Fetch failure. Status Code: ' + response.status);
           return;
         }
-
-        // Examine the text in the response
-        response.json().then(function(data) {
-          console.log(data);
+        response.json().then(function(json) {
+          log('httpPost: Response: ' + JSON.stringify(json));
+          callback(json);
         });
       }
     )
     .catch(function(err) {
-      log('httpGet: Fetch error :-S', err);
+      log('httpGet: Fetch exception: ' + err);
+    });
+}
+
+function httpPost(url, body, callback) {
+  log('httpPost: ' + url + ' ' + body)
+  fetch(SERVER + url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+      body: body})
+    .then(
+      function(response) {
+        if (response.status != 200) {
+          log('httpPost:  Fetch failure. Status Code: ' + response.status);
+          return;
+        }
+        response.json().then(function(json) {
+          log('httpPost: Response: ' + JSON.stringify(json));
+          callback(json);
+        });
+      }
+    )
+    .catch(function(err) {
+      log('httpPost: Fetch exception: ' + err);
+    });
+}
+
+function httpDelete(url, callback) {
+  log('httpDelete: ' + url);
+  fetch(SERVER + url, {method: 'DELETE'})
+    .then(
+      function(response) {
+        if (response.status != 200) {
+          log('httpDelete:  Fetch failure. Status Code: ' + response.status);
+          return;
+        }
+        response.json().then(function(json) {
+          log('httpDelete: Response: ' + JSON.stringify(json));
+          callback(json);
+        });
+      }
+    )
+    .catch(function(err) {
+      log('httpDelete: Fetch exception: ' + err);
     });
 }
 
@@ -265,10 +266,7 @@ function log(text) {
 }
 
 
-log('main: fetch /users');
-fetch(SERVER + '/users').then(function(response) {
-  return response.json();
-}).then(function(json) {
+httpGet('/users', function(json) {
   v_user_list.users = json.users;
 });
 

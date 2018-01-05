@@ -1,9 +1,21 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 
 <head>
-  <title>AnyShare</title>
-  <script src="https://unpkg.com/vue"></script>
+  <!-- The following 2 meta tags always come first -->
+  <!-- Notify browsers this page is in Unicode -->
+  <meta charset="utf-8">
+  <!-- This site is responsive. Use full screen width. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Anything Shared</title>
+
+  <meta name="description" content="Anything Shared">
+  <meta name="keywords" content="anything shared">  
+
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
 
   <style type="text/css">
     .pseudoLink {
@@ -12,24 +24,40 @@
       cursor:pointer;
     }
   </style>
+
+  <script src="https://unpkg.com/vue"></script>
 </head>
 
 <body>
+  <h3>Anything Shared</h3>
+
   <div id="navigation">
-    <span v-on:click="onClick()" class="pseudoLink">
-      <div v-if="app_state == 'USER_LIST'">
-      </div>
-      <div v-else-if="app_state == 'ITEM_LIST'">
-        User List
-      </div>
-      <div v-else-if="app_state == 'ITEM_VIEW'">
-        Item List
-      </div>
-      <div v-else-if="app_state == 'RESERVATIONS'">
-        Item View
-      </div>
-    </span>
-    <p>
+    <div v-if="app_state == 'USER_LIST'">
+      <ul class="breadcrumb">
+        <li class="breadcrumb-item">Home</li>
+      </ul> 
+    </div>
+    <div v-else-if="app_state == 'ITEM_LIST'">
+      <ul class="breadcrumb">
+        <li class="breadcrumb-item"><span v-on:click="onClick('USER_LIST')" class="pseudoLink">Home</span></li>
+        <li class="breadcrumb-item">Item List</li>
+      </ul> 
+    </div>
+    <div v-else-if="app_state == 'ITEM_VIEW'">
+      <ul class="breadcrumb">
+        <li class="breadcrumb-item"><span v-on:click="onClick('USER_LIST')" class="pseudoLink">Home</span></li>
+        <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Item List</span></li>
+        <li class="breadcrumb-item">Item View</li>
+      </ul> 
+    </div>
+    <div v-else-if="app_state == 'RESERVATIONS'">
+      <ul class="breadcrumb">
+        <li class="breadcrumb-item"><span v-on:click="onClick('USER_LIST')" class="pseudoLink">Home</span></li>
+        <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Item List</span></li>
+        <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">Item View</span></li>
+        <li class="breadcrumb-item">Reservations</li>
+      </ul> 
+   </div>
   </div>
 
   <div id="user_list" style="display: none">
@@ -105,6 +133,6 @@
 
   </div>
 
-  <script src="anyshare.js"></script>
+  <script src="../web/anyshare.js"></script>
 
 </body>
