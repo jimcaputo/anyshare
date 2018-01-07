@@ -15,8 +15,18 @@ CORS(app)
 
 
 @app.route('/')
-def httpHome():
+def http_home():
     return 'Anything Shared!'
+
+@app.route('/web/anyshare.html')
+def http_html():
+    f = open('../web/anyshare.html', 'r')
+    return f.read()
+
+@app.route('/web/anyshare.js')
+def http_js():
+    f = open('../web/anyshare.js', 'r')
+    return f.read()
 
 
 # GET - Returns list of items for current user
@@ -165,6 +175,10 @@ def http_users_validate():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
     #app.run(host='127.0.0.1', port=8080, debug=True)
+
+
+# Command line to run with gunicorn
+#   gunicorn -w 4 -b 0.0.0.0:8080 --log-level=debug main:app
 
 
 
