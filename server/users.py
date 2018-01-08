@@ -40,7 +40,7 @@ def create(request):
 	#   successfully validates via the registration flow. 
 	if response == 'Success':
 		print('Validation Code: ' + str(validation_code))
-		sms.send('+1' + user['phone_number'], 'Anything Shared validation code: {}'.format(validation_code))
+		#sms.send('+1' + user['phone_number'], 'Anything Shared validation code: {}'.format(validation_code))
 		response = {'code': 200}
 	else:
    		response = {'code': 500, 'message': 'users.py:create - ' + response}

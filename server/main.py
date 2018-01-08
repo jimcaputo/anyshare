@@ -28,6 +28,11 @@ def http_js():
     f = open('../web/anyshare.js', 'r')
     return f.read()
 
+@app.route('/media/<file_name>')
+def http_media(file_name):
+    f = open('../web/media/' + file_name, 'rb')
+    return f.read()
+
 
 # GET - Returns list of items for current user
 @app.route('/items/<phone_number>', methods=['GET'])

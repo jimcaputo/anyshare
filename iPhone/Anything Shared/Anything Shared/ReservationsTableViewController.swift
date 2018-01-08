@@ -97,11 +97,10 @@ class ReservationTableViewCell: UITableViewCell {
     
     @IBAction func buttonDelete(_ sender: Any) {
         httpRequest(url: "/reservations/" + g_currentItemId + "/" + labelDate.text!, method: "DELETE") { json in
-            let tableViewController = self.reservationsTableViewController
-            let indexPath = tableViewController?.tableView.indexPath(for: self)
-            
-            tableViewController?.reservations.remove(at: (indexPath?.row)!)
             DispatchQueue.main.async {
+                let tableViewController = self.reservationsTableViewController
+                let indexPath = tableViewController?.tableView.indexPath(for: self)
+                tableViewController?.reservations.remove(at: (indexPath?.row)!)
                 tableViewController?.tableView.deleteRows(at: [indexPath!], with: UITableViewRowAnimation.fade)
             }
         }
