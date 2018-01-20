@@ -42,7 +42,7 @@
 <body class="text-center">
   <div class="container grid-xs">
   
-  <h3 style="margin-top: .4rem; margin-bottom: 0rem">Anything Shared</h3>
+  <h3 style="margin-top: .7rem; margin-bottom: 0rem">Anything Shared</h3>
 
   <div id="navigation">
     <div v-if="app_state == 'USER_LIST'">
@@ -90,11 +90,9 @@
             <img v-bind:src="'/media/' + user.phone_number + '.jpg'" style="width:80px; height:106px">
           </td>
           <td>
-            <span class="pseudoLink">
-              {{ user.user_name }} 
-            </span>
+            <span class="pseudoLink">{{ user.user_name }}</span>
           </td>
-          <td>{{ user.phone_number}}</td>
+          <td>{{ user.phone_number }}</td>
         </tr>
       </tbody>
     </table>
@@ -105,14 +103,17 @@
       <thead>
         <tr>
           <th>Item</th>
+          <th>Name</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in items" v-on:click="item_onClick(item)">
           <td>
-            <span class="pseudoLink">
-              {{ item.name }}
-            </span>
+            <img v-bind:src="'/media/' + item.phone_number_owner + '-' + item.name + '.jpg'" 
+                style="width:172px; height:100px">
+          </td>
+          <td>
+            <span class="pseudoLink">{{ item.name }}</span>
           </td>
         </tr>
       </tbody>
@@ -183,6 +184,7 @@
       <thead>
         <tr>
           <th>Date</th>
+          <th>Mug Shot</th>
           <th>User</th>
           <th>Action</th>
         </tr>
@@ -190,6 +192,9 @@
       <tbody>
         <tr v-for="reservation in reservations">
           <td>{{ reservation.date }}</td>
+          <td>
+            <img v-bind:src="'/media/' + reservation.phone_number + '.jpg'" style="width:80px; height:106px">
+          </td>
           <td>{{ reservation.user_name }}</td>
           <td>
             <button v-if="reservation.phone_number == current_phone_number"

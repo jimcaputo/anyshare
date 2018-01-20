@@ -27,13 +27,17 @@ function formatDate(date) {
     return result;
 }
 
-function updateAppState(appState) {
+function updateAppState(appState, updateBrowserState = true) {
   v_navigation.app_state = appState;
-
+  
   v_user_list.$el.style.display = 'none';
   v_item_view.$el.style.display = 'none';
   v_item_list.$el.style.display = 'none';
   v_reservations.$el.style.display = 'none';
+
+  if (updateBrowserState == true) {
+    history.pushState({app_state: appState}, '', '');
+  }
 
   if (appState == APP_STATE.USER_LIST) {
     v_user_list.show();
@@ -49,6 +53,12 @@ function updateAppState(appState) {
   }
   log('updateAppState: Transitioning to APP_STATE.' + appState);
 }
+
+window.onpopstate = function(event) {
+  log('onpopstate: ' + event.state.app_state);
+  updateAppState(event.state.app_state, false);
+};
+
 
 var v_navigation = new Vue({
   el: '#navigation',

@@ -11,9 +11,9 @@ import Foundation
 import UIKit
 
 
-var g_server = "http://127.0.0.1:8080"
+//var g_server = "http://127.0.0.1:8080"
 //var g_server = "http://192.168.1.200:8080"
-//var g_server = "http://lakeuniontech.asuscomm.com:8080"
+var g_server = "http://lakeuniontech.asuscomm.com:8080"
 
 var g_userName: String!
 var g_phoneNumber: String!

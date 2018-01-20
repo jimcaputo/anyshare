@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
 
 # Command line to run with gunicorn
-#   gunicorn -w 4 -b 0.0.0.0:8080 --log-level=debug main:app
+#   gunicorn -w 24 -b 0.0.0.0:8080 --log-level=debug main:app
 
 
 
