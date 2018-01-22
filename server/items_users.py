@@ -27,9 +27,8 @@ def get(item_id):
 
 def add(request):
 	item_user = request.get_json()
-	sql = 'CALL item_user_add("{}", "{}", "{}")' \
-		.format(item_user['item_id'], item_user['phone_number'], item_user['user_name'])
-	print(sql)
+	sql = 'INSERT IGNORE INTO items_users (item_id, phone_number) VALUES ({}, {})' \
+			.format(item_user['item_id'], item_user['phone_number'])
 	response, _ = database.insert_update_delete(sql)
 
 	if response == 'Success':

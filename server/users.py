@@ -5,9 +5,13 @@ import database
 import sms
 
 
-# Returns list of all users.  DEBUG MODE ONLY!!
-def get():
-	sql = 'SELECT user_name, phone_number FROM users ORDER BY user_name;'
+# Returns list of users.  If phone_number=None, returns all users (debug mode only).
+def get(phone_number):
+	if phone_number != None:
+		sql = 'SELECT user_name, phone_number FROM users WHERE phone_number = {}' \
+				.format(phone_number)
+	else:
+		sql = 'SELECT user_name, phone_number FROM users ORDER BY user_name;'
 	rows, response = database.read(sql)
 
 	if response == 'Success':

@@ -67,18 +67,6 @@ END $$
 DELIMITER ; $$
 
 DELIMITER $$
-CREATE PROCEDURE item_user_add(p_item_id INT, p_phone_number VARCHAR(20), p_user_name VARCHAR(25))
-BEGIN
-IF NOT EXISTS (SELECT user_name FROM users WHERE phone_number = p_phone_number) THEN
-BEGIN 
-INSERT INTO users (phone_number, user_name) VALUES (p_phone_number, p_user_name);
-END;
-END IF;
-INSERT IGNORE INTO items_users (item_id, phone_number) VALUES (p_item_id, p_phone_number);
-END $$
-DELIMITER ; $$
-
-DELIMITER $$
 CREATE PROCEDURE item_delete(p_item_id INT)
 BEGIN
 DELETE FROM items WHERE item_id = p_item_id;

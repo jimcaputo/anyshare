@@ -44,7 +44,7 @@
   
   <h3 style="margin-top: .7rem; margin-bottom: 0rem">Anything Shared</h3>
 
-  <div id="navigation">
+  <div id="navigation" style="display: none">
     <div v-if="app_state == 'USER_LIST'">
       <ul class="breadcrumb">
         <li class="breadcrumb-item">Home</li>
@@ -60,15 +60,29 @@
       <ul class="breadcrumb">
         <li class="breadcrumb-item"><span v-on:click="onClick('USER_LIST')" class="pseudoLink">Home</span></li>
         <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Item List</span></li>
-        <li class="breadcrumb-item">Item View</li>
+        <li class="breadcrumb-item">
+          <span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">{{ global.currentItemName() }}</span>
+        </li>
       </ul> 
     </div>
     <div v-else-if="app_state == 'RESERVATIONS'">
       <ul class="breadcrumb">
         <li class="breadcrumb-item"><span v-on:click="onClick('USER_LIST')" class="pseudoLink">Home</span></li>
         <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Item List</span></li>
-        <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">Item View</span></li>
+        <li class="breadcrumb-item">
+          <span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">{{ global.currentItemName() }}</span>
+        </li>
         <li class="breadcrumb-item">Reservations</li>
+      </ul> 
+   </div>
+   <div v-else-if="app_state == 'MANAGE_USERS'">
+      <ul class="breadcrumb">
+        <li class="breadcrumb-item"><span v-on:click="onClick('USER_LIST')" class="pseudoLink">Home</span></li>
+        <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Item List</span></li>
+        <li class="breadcrumb-item">
+          <span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">{{ global.currentItemName() }}</span>
+        </li>
+        <li class="breadcrumb-item">Manage Users</li>
       </ul> 
    </div>
   </div>
@@ -81,7 +95,6 @@
         <tr>
           <th>Mug Shot</th>
           <th>User</th>
-          <th>Phone Number</th>
         </tr>
       </thead>
       <tbody>
@@ -92,7 +105,6 @@
           <td>
             <span class="pseudoLink">{{ user.user_name }}</span>
           </td>
-          <td>{{ user.phone_number }}</td>
         </tr>
       </tbody>
     </table>
@@ -104,6 +116,7 @@
         <tr>
           <th>Item</th>
           <th>Name</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -115,9 +128,40 @@
           <td>
             <span class="pseudoLink">{{ item.name }}</span>
           </td>
+          <td>
+            <button v-if="item.phone_number_owner == global.currentPhoneNumber()"
+                v-on:click.stop="delete_onClick(item)" class="btn btn-primary">
+              Delete
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
+    
+    <div id="item_delete_dialog" class="modal modal-sm">
+      <div class="modal-container">
+        <div class="modal-header">
+          <div class="modal-title h5">Delete Confirmation</div>
+        </div>
+        <div class="modal-body">
+          <div class="content">
+            Deleting an item will <b>permanently</b> delete not only the item, but all reservations as well.
+            Are you sure you want to continue?
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button v-on:click="yes_onClick()" class="btn">Yes</button>
+          <button v-on:click="no_onClick()" class="btn btn-primary">No</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin-top: 2.5rem; margin-bottom: 1.5rem" data-content="Create New Item"></div>
+ 
+    <div class="input-group" style="justify-content: center">
+      <input style="width: 150px" v-model="item_create_name" type="text" maxlength="25" placeholder="Item Name">
+      <button v-on:click="create_onClick()" class="btn btn-primary">Create</button>
+    </div>
   </div>
 
   <div id="item_view" style="display: none">
@@ -128,7 +172,7 @@
           <div style="line-height: 1.8rem">Current Status</div>
         </div>
         <div class="col-4">
-          <div class="text-center text-success" style="line-height: 1.8rem">Inactive</div>
+          <div class="text-center text-success" style="line-height: 1.8rem">Available</div>
         </div>
         <div class="col-4">
           <button v-on:click="activate_onClick()" class="btn btn-primary">Activate</button>
@@ -141,7 +185,7 @@
           <div style="line-height: 1.8rem">Current Status</div>
         </div>
         <div class="col-4">
-          <div class="text-center text-error" style="line-height: 1.8rem">Active - {{ status.user_name }}</div>
+          <div class="text-center text-error" style="line-height: 1.8rem">In Use - {{ status.user_name }}</div>
         </div>
         <div class="col-4">
           <button v-on:click="deactivate_onClick()" class="btn btn-primary" :disabled="!active_user">Deactivate</button>
@@ -177,6 +221,11 @@
         <span v-on:click="reservations_onClick()" class="pseudoLink">Existing Reservations</span>
       </div>
     </div>
+
+    <div class="divider" style="margin-top: 1.5rem" data-content="Users"></div>
+    <div style="margin-top: 1rem">
+      <span v-on:click="manageUsers_onClick()" class="pseudoLink">Manage Users</span>
+    </div>
   </div>
 
   <div id="reservations" style="display:none">
@@ -197,7 +246,7 @@
           </td>
           <td>{{ reservation.user_name }}</td>
           <td>
-            <button v-if="reservation.phone_number == current_phone_number"
+            <button v-if="reservation.phone_number == global.currentPhoneNumber()"
                 v-on:click="delete_onClick(reservation)" class="btn btn-primary">
               Delete
             </button>
@@ -205,6 +254,85 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div id="manage_users" style="display:none">
+    Find User to Add
+    <div class="input-group" style="justify-content: center; margin-top: .4rem">
+      <input style="width: 150px" v-model="search_phone_number" type="text" maxlength="25" placeholder="206-555-1212">
+      <button v-on:click="search_onClick()" class="btn btn-primary">Search</button>
+    </div>
+
+    <table v-if="show_search_result" class="table">
+      <thead>
+        <tr>
+          <th>Mug Shot</th>
+          <th>User</th>
+          <th>Phone Number</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <img v-bind:src="'/media/' + search_user.phone_number + '.jpg'" style="width:80px; height:106px">
+          </td>
+          <td>{{ search_user.user_name }}</td>
+          <td>{{ search_user.phone_number }}</td>
+          <td>
+            <button v-on:click="add_onClick(search_user)" class="btn btn-primary">
+              Add
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="divider" style="margin-top: 2.5rem" data-content="Existing Users"></div>
+    
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Mug Shot</th>
+          <th>User</th>
+          <th>Phone Number</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="user in users">
+          <td>
+            <img v-bind:src="'/media/' + user.phone_number + '.jpg'" style="width:80px; height:106px">
+          </td>
+          <td>{{ user.user_name }}</td>
+          <td>{{ global.formatPhoneNumber(user.phone_number) }}</td>
+          <td>
+            <button v-if="user.phone_number == global.currentItemPhoneNumberOwner()" disabled=true class="btn">
+              Owner
+            </button>
+            <button v-else v-on:click="remove_onClick(user)" class="btn btn-primary">
+              Remove
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="info_dialog" class="modal modal-sm">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title h5">{{ title }}</div>
+      </div>
+      <div class="modal-body">
+        <div class="content">
+          {{ message }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button v-on:click="okay_onClick()" class="btn btn-primary">Okay</button>
+      </div>
+    </div>
   </div>
 
   </div>

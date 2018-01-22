@@ -30,8 +30,17 @@ def http_js():
 
 @app.route('/media/<file_name>')
 def http_media(file_name):
-    f = open('../web/media/' + file_name, 'rb')
-    return f.read()
+    try:
+        f = open('../web/media/' + file_name, 'rb')
+        return f.read()
+    except Exception as err:
+        print(str(err))
+    try:
+        f = open('../web/media/default.jpg', 'rb')
+        return f.read()
+    except Exception as err:
+        print(str(err))
+    return ''
 
 
 # GET - Returns list of items for current user
@@ -145,11 +154,12 @@ def http_items_users_delete(item_id, phone_number):
     return json.dumps(response), int(response['code'])
 
 
-# GET - Returns list of all users.  DEBUG MODE ONLY!!
-@app.route('/users', methods=['GET'])
-def http_users_get():
+# GET - Returns list of users
+@app.route('/users', methods=['GET'])       # Returns all users - should only be used in debug mode
+@app.route('/users/<phone_number>', methods=['GET'])
+def http_users_get(phone_number=None):
     try:
-        response = users.get()
+        response = users.get(phone_number)
     except Exception as err:
         response = {'code': 500, 'message': 'main.py:users_get - ' + str(err)}
     return json.dumps(response), int(response['code'])
