@@ -297,6 +297,7 @@ var v_manage_users = new Vue({
         if (json.users.length > 0) { 
           this.search_user = json.users[0];
           this.show_search_result = true;
+          this.search_phone_number = '';
         }
         else {
           v_info_dialog.show('User Search', 'Phone number not found');

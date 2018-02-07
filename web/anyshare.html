@@ -278,7 +278,7 @@
             <img v-bind:src="'/media/' + search_user.phone_number + '.jpg'" style="width:80px; height:106px">
           </td>
           <td>{{ search_user.user_name }}</td>
-          <td>{{ search_user.phone_number }}</td>
+          <td>{{ global.formatPhoneNumber(search_user.phone_number) }}</td>
           <td>
             <button v-on:click="add_onClick(search_user)" class="btn btn-primary">
               Add
