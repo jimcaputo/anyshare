@@ -17,19 +17,40 @@ def get(item_id):
 				'code': 200,
 				'status': {
 					'active': 'true',
+					'reserved': 'false',
 					'phone_number': rows[0][1],
 					'user_name': rows[0][3]
 				}
 			}
 		else:
-			response = {
-				'code': 200,
-				'status': {
-					'active': 'false',
-					'phone_number': '',
-					'user_name': ''
-				}
-			}
+			sql = 'SELECT u.phone_number, u.user_name FROM reservations r ' \
+				'JOIN users u ON r.phone_number = u.phone_number WHERE item_id = {} AND date = DATE(NOW());' \
+				.format(item_id)
+			rows, response = database.read(sql)
+
+			if response == 'Success' :
+				if len(rows) == 1:
+					response = {
+						'code': 200,
+						'status': {
+							'active': 'true',
+							'reserved': 'true',
+							'phone_number': rows[0][0],
+							'user_name': rows[0][1]
+						}
+					}
+				else:
+					response = {
+						'code': 200,
+						'status': {
+							'active': 'false',
+							'reserved': 'false',
+							'phone_number': '',
+							'user_name': ''
+						}
+					}
+			else:
+				response = {'code': 500, 'message': 'status.py:get - ' + response}
 	else:
 		response = {'code': 500, 'message': 'status.py:get - ' + response}
 

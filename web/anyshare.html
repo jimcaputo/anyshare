@@ -185,10 +185,20 @@
           <div style="line-height: 1.8rem">Current Status</div>
         </div>
         <div class="col-4">
-          <div class="text-center text-error" style="line-height: 1.8rem">In Use - {{ status.user_name }}</div>
+          <div v-if="status.reserved == 'true'" class="text-center text-error" style="line-height: 1.8rem">
+            Reserved - {{ status.user_name }}
+          </div>
+          <div v-if="status.reserved == 'false'" class="text-center text-error" style="line-height: 1.8rem">
+            In Use - {{ status.user_name }}
+          </div>
         </div>
         <div class="col-4">
-          <button v-on:click="deactivate_onClick()" class="btn btn-primary" :disabled="!active_user">Deactivate</button>
+          <button v-if="status.reserved == 'true'" class="btn btn-primary" :disabled="true">
+            Activate
+          </button>
+          <button v-else v-on:click="deactivate_onClick()" class="btn btn-primary" :disabled="!active_user">
+            Deactivate
+          </button>
         </div>
       </div>
     </div>
@@ -200,7 +210,7 @@
         <div class="col-2"></div>
         <div class="col-4">Start Date</div>
         <div class="col-5">
-          <input v-on:change="updateAvailability()" style="width: 155px" v-model="date" type="date" :min="today">
+          <input v-on:change="updateAvailability()" style="width: 155px" v-model="date" type="date" :min="tomorrow">
         </div>
       </div>
       <div class="columns text-left" style="margin-top: .4rem">

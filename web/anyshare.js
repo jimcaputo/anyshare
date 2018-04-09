@@ -1,5 +1,5 @@
-var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
-//var SERVER = 'http://127.0.0.1:8080';
+//var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
+var SERVER = 'http://127.0.0.1:8080';
 
 var APP_STATE = {
     USER_LIST: 'USER_LIST',
@@ -113,11 +113,8 @@ var v_item_list = new Vue({
       g_currentItemId = item.item_id;
       g_currentItemName = item.name;
       g_currentItemPhoneNumberOwner = item.phone_number_owner;
-      httpGet('/status/' + g_currentItemId, (json) => {
-        v_item_view.name = item.name;
-        v_item_view.status = json.status;
-        updateAppState(APP_STATE.ITEM_VIEW);
-      });
+      v_item_view.name = item.name;
+      updateAppState(APP_STATE.ITEM_VIEW);
     },
     delete_onClick: function(item) {
       item_delete = item;
@@ -159,7 +156,7 @@ var v_item_view = new Vue({
       user_name: ''
     },
     active_user: false,     // Computed to true, if current user is actively using this item.
-    today: '',
+    tomorrow: '',
     date: '',
     days: 0,
     available: false,
@@ -168,9 +165,16 @@ var v_item_view = new Vue({
   methods: {
     show: function() {
       this.$el.style.display = 'block';
-      this.today = formatDate(new Date());
-      this.date = formatDate(new Date());
+
+      var tomorrow = new Date();
+      tomorrow.setTime(tomorrow.getTime() + 24 * 60 * 60 * 1000);
+      this.tomorrow = formatDate(tomorrow);
+      this.date = formatDate(tomorrow);
       this.days = 0;
+
+      httpGet('/status/' + g_currentItemId, (json) => {
+        this.status = json.status;
+      });
       if (this.status.active == 'true'  &&  this.status.phone_number == g_currentPhoneNumber) {
         this.active_user = true;
       } else {
@@ -213,7 +217,9 @@ var v_item_view = new Vue({
 
       var startDate = getLocaleDate(this.date);
       var endDate = new Date(startDate);
-      endDate.setTime(endDate.getTime() + this.days * 24 * 60 * 60 * 1000);
+      // Calculate the end date for the reservation.  We subtract 1 because if only 1 day, the text should
+      // read:  "Apr 1 - Apr 1"  Then multiply to get the number of seconds.  
+      endDate.setTime(endDate.getTime() + (this.days - 1) * 24 * 60 * 60 * 1000);
 
       var url = '/reservations/' + g_currentItemId + '/' + formatDate(startDate) + '/' + formatDate(endDate);
       httpGet(url, (json) => {
@@ -238,7 +244,9 @@ var v_item_view = new Vue({
       }
 
       httpPost('/reservations', JSON.stringify(reservations), () => {
-        this.date = formatDate(new Date());
+        var tomorrow = new Date();
+        tomorrow.setTime(tomorrow.getTime() + 24 * 60 * 60 * 1000);
+        this.date = formatDate(tomorrow);
         this.days = 0;
         this.available = '';
         v_info_dialog.show('Confirmation', 'Reserved!', true);

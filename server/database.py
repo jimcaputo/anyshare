@@ -3,8 +3,6 @@ import MySQLdb
 
 USER = 'anyshare'
 PASSWORD = 'anyshare_password'
-#USER = 'root'
-#PASSWORD = 'root_password'
 DATABASE = 'anyshare'
 
 
