@@ -1,7 +1,8 @@
-//var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
-var SERVER = 'http://127.0.0.1:8080';
+var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
+//var SERVER = 'http://127.0.0.1:8080';
 
 var APP_STATE = {
+    SIGN_IN: 'SIGN_IN',
     USER_LIST: 'USER_LIST',
     ITEM_LIST: 'ITEM_LIST',
     ITEM_VIEW: 'ITEM_VIEW',
@@ -24,13 +25,15 @@ var global = {
   currentItemName: function() { return g_currentItemName; },
   currentItemPhoneNumberOwner: function() { return g_currentItemPhoneNumberOwner; },
 
-  formatPhoneNumber: function(phoneNumber) { return formatPhoneNumber(phoneNumber); }
+  formatPhoneNumber: function(phoneNumber) { return formatPhoneNumber(phoneNumber); },
+  formatDate: function(dateString) { return formatDate(dateString); }
 };
 
 
 function updateAppState(appState, updateBrowserState = true) {
   v_navigation.app_state = appState;
   
+  v_sign_in.$el.style.display = 'none';
   v_user_list.$el.style.display = 'none';
   v_item_view.$el.style.display = 'none';
   v_item_list.$el.style.display = 'none';
@@ -41,7 +44,10 @@ function updateAppState(appState, updateBrowserState = true) {
     history.pushState({app_state: appState}, '', '');
   }
 
-  if (appState == APP_STATE.USER_LIST) {
+  if (appState == APP_STATE.SIGN_IN) {
+    v_sign_in.show();
+  }
+  else if (appState == APP_STATE.USER_LIST) {
     v_user_list.show();
   }
   else if (appState == APP_STATE.ITEM_LIST) {
@@ -77,6 +83,58 @@ var v_navigation = new Vue({
   }
 });
 
+var v_sign_in = new Vue({
+  el: '#sign_in',
+  data: {
+    phone_number: '',
+    user_name: '',
+    register_clicked: false,
+    verification_code: '',
+    show_verify: false
+  },
+  methods: {
+    show: function() {
+      this.$el.style.display = 'block';
+      v_sign_out.show = false;
+      this.phone_number = '';
+      this.user_name = '';
+      this.register_clicked = false;
+      this.verification_code = '';
+      this.show_verify = false;
+    },
+    register_onClick: function() {
+      this.register_clicked = true;
+      this.show_verify = true;
+
+      var json = {
+        phone_number: stripPhoneNumber(this.phone_number),
+        user_name: this.user_name
+      };
+      httpPost('/users', JSON.stringify(json), () => {
+      });
+    },
+    verify_onClick: function() {
+      var json = {
+        phone_number: stripPhoneNumber(this.phone_number),
+        validation_code: this.verification_code
+      };
+      httpPatch('/users', JSON.stringify(json), () => {
+        v_sign_out.show = true;
+
+        document.cookie = 'user_name=' + this.user_name + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+        document.cookie = 'phone_number=' + stripPhoneNumber(this.phone_number) + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+        g_currentUserName = this.user_name;
+        g_currentPhoneNumber = stripPhoneNumber(this.phone_number);
+
+        httpGet('/items/' + g_currentPhoneNumber, function(json) {
+          v_item_list.items = json.items;
+          updateAppState(APP_STATE.ITEM_LIST);
+        });
+      });
+    }
+  }
+});
+
 var v_user_list = new Vue({
   el: '#user_list',
   data: {
@@ -84,7 +142,7 @@ var v_user_list = new Vue({
   },
   methods: {
     show: function() {
-      this.$el.style.display = "block";
+      this.$el.style.display = 'block';
     },
     user_onClick: function(user) {
       g_currentUserName = user.user_name;
@@ -107,7 +165,7 @@ var v_item_list = new Vue({
   },
   methods: {
     show: function() {
-      this.$el.style.display = "block";
+      this.$el.style.display = 'block';
     },
     item_onClick: function(item) {
       g_currentItemId = item.item_id;
@@ -269,7 +327,7 @@ var v_reservations = new Vue({
   },
   methods: {
     show: function() {
-      this.$el.style.display = "block";
+      this.$el.style.display = 'block';
     },
     delete_onClick: function(reservation) {
       httpDelete('/reservations/' + g_currentItemId + '/' + reservation.date, () => {
@@ -293,7 +351,7 @@ var v_manage_users = new Vue({
     show: function() {
       this.search_phone_number = '';
       this.show_search_result = false;
-      this.$el.style.display = "block";
+      this.$el.style.display = 'block';
     },
     search_onClick: function() {
       var searchPhoneNumber = stripPhoneNumber(this.search_phone_number);
@@ -356,6 +414,20 @@ var v_info_dialog = new Vue({
   }
 });
 
+var v_sign_out = new Vue({
+  el: '#sign_out',
+  data: {
+    show: false
+  },
+  methods: {
+    signOut_onClick: function() {
+      deleteCookie('user_name');
+      deleteCookie('phone_number');
+      updateAppState(APP_STATE.SIGN_IN);
+    }
+  }
+});
+
 
 function httpGet(url, callback) {
   log('httpGet: ' + url);
@@ -400,6 +472,32 @@ function httpPost(url, body, callback) {
     )
     .catch(function(err) {
       log('httpPost: Fetch exception: ' + err);
+    });
+}
+
+function httpPatch(url, body, callback) {
+  log('httpPatch: ' + url + ' ' + body)
+  fetch(SERVER + url, {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+      body: body})
+    .then(
+      function(response) {
+        if (response.status != 200) {
+          log('httpPatch:  Fetch failure. Status Code: ' + response.status);
+          return;
+        }
+        response.json().then(function(json) {
+          log('httpPatch: Response: ' + JSON.stringify(json));
+          callback(json);
+        });
+      }
+    )
+    .catch(function(err) {
+      log('httpPatch: Fetch exception: ' + err);
     });
 }
 
@@ -481,16 +579,57 @@ function formatPhoneNumber(phoneNumber) {
   return result;
 }
 
+function formatDate(dateString) {
+  // Expects the format yyyy-mm-dd
+  var parts = dateString.split('-');
+  // Note - Javascript counts months from 0, hence the -1 for that part.
+  var date = new Date(parts[0], parts[1] - 1, parts[2]);
+  return getDayString(date) + ', ' + getMonthString(date) + ' ' + date.getDate();
+}
+
 function log(text) {
   var date = new Date();
   console.log(date.toLocaleTimeString() + ' - ' + text);
 }
 
+function getCookie(key) {
+    var value = ' ' + document.cookie;
+    var start = value.indexOf(' ' + key + '=');
+    if (start == -1) {
+        value = null;
+    }
+    else {
+        start = value.indexOf('=', start) + 1;
+        var end = value.indexOf(';', start);
+        if (end == -1) {
+            end = value.length;
+        }
+        value = value.substring(start, end);
+    }
+    return value;
+}
 
-httpGet('/users', function(json) {
-  v_user_list.users = json.users;
-});
+var deleteCookie = function(key) {
+    document.cookie = key + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+};
 
+
+
+g_currentUserName = getCookie('user_name');
+g_currentPhoneNumber = getCookie('phone_number');
+
+if (g_currentUserName == null) {
+  updateAppState(APP_STATE.SIGN_IN);
+}
+else {
+  v_sign_out.show = true;
+  httpGet('/items/' + g_currentPhoneNumber, function(json) {
+    v_item_list.items = json.items;
+    updateAppState(APP_STATE.ITEM_LIST);
+  });
+}
 document.getElementById('navigation').style.display = 'block';
-updateAppState(APP_STATE.USER_LIST);
+
+
+
 
