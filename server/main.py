@@ -18,14 +18,9 @@ CORS(app)
 def http_home():
     return 'Anything Shared!'
 
-@app.route('/web/anyshare.html')
-def http_html():
-    f = open('../web/anyshare.html', 'r')
-    return f.read()
-
-@app.route('/web/anyshare.js')
-def http_js():
-    f = open('../web/anyshare.js', 'r')
+@app.route('/web/<file_name>')
+def http_web(file_name):
+    f = open('../web/' + file_name, 'r')
     return f.read()
 
 @app.route('/media/<file_name>')
@@ -175,13 +170,13 @@ def http_users_create():
     return json.dumps(response), int(response['code'])
 
 
-# PATCH - Updates user account with registration code
+# PATCH - Updates user account, either registration code or new username
 @app.route('/users', methods=['PATCH'])
-def http_users_validate():
+def http_users_update():
     try:
-        response = users.validate(request)
+        response = users.update(request)
     except Exception as err:
-        response = {'code': 500, 'message': 'main.py:users_validate - ' + str(err)}
+        response = {'code': 500, 'message': 'main.py:users_update - ' + str(err)}
     return json.dumps(response), int(response['code'])
 
 

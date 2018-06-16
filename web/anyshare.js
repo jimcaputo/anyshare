@@ -1,5 +1,5 @@
-var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
-//var SERVER = 'http://127.0.0.1:8080';
+//var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
+var SERVER = 'http://127.0.0.1:8080';
 
 var APP_STATE = {
     SIGN_IN: 'SIGN_IN',
@@ -17,6 +17,10 @@ var g_currentItemId = '';
 var g_currentItemName = '';
 var g_currentItemPhoneNumberOwner = '';
 
+g_currentUserName = getCookie('user_name');
+g_currentPhoneNumber = getCookie('phone_number');
+
+
 // For use by Vue rendering in HTML.  Provides easy read-only access to global variables and functions.
 var global = {
   currentPhoneNumber: function() { return g_currentPhoneNumber; },
@@ -25,9 +29,24 @@ var global = {
   currentItemName: function() { return g_currentItemName; },
   currentItemPhoneNumberOwner: function() { return g_currentItemPhoneNumberOwner; },
 
-  formatPhoneNumber: function(phoneNumber) { return formatPhoneNumber(phoneNumber); },
-  formatDate: function(dateString) { return formatDate(dateString); }
+  displayPhoneNumber: function(phoneNumber) { return displayPhoneNumber(phoneNumber); },
+  displayDate: function(dateString) { return displayDate(dateString); },
+  displayTime: function(dateTime) { return displayTime(dateTime); }
 };
+
+
+var v_header = new Vue({
+  el: '#header',
+  data: {
+    global: global,
+    userName: g_currentUserName
+  },
+  methods: {
+    user_onClick: function() {
+      v_user_dialog.show();
+    }
+  }
+});
 
 
 function updateAppState(appState, updateBrowserState = true) {
@@ -95,7 +114,6 @@ var v_sign_in = new Vue({
   methods: {
     show: function() {
       this.$el.style.display = 'block';
-      v_sign_out.show = false;
       this.phone_number = '';
       this.user_name = '';
       this.register_clicked = false;
@@ -119,8 +137,6 @@ var v_sign_in = new Vue({
         validation_code: this.verification_code
       };
       httpPatch('/users', JSON.stringify(json), () => {
-        v_sign_out.show = true;
-
         document.cookie = 'user_name=' + this.user_name + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
         document.cookie = 'phone_number=' + stripPhoneNumber(this.phone_number) + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
         g_currentUserName = this.user_name;
@@ -131,6 +147,35 @@ var v_sign_in = new Vue({
           updateAppState(APP_STATE.ITEM_LIST);
         });
       });
+    }
+  }
+});
+
+var v_user_dialog = new Vue({
+  el: '#user_dialog',
+  data: {
+    
+  },
+  methods: {
+    show: function(title, message, timeout = false) {
+      document.getElementById('user_dialog').classList.add('active');
+    },
+    signOut_onClick: function() {
+      document.getElementById('user_dialog').classList.remove('active');
+      g_currentPhoneNumber = '';
+      g_currentUserName = '';
+      g_currentItemId = 0;
+      g_currentItemName = '';
+      g_currentItemPhoneNumberOwner = '';
+
+      v_header.data.userName = '';
+
+      deleteCookie('user_name');
+      deleteCookie('phone_number');
+      updateAppState(APP_STATE.SIGN_IN);
+    },
+    cancel_onClick: function() {
+      document.getElementById('user_dialog').classList.remove('active');
     }
   }
 });
@@ -207,13 +252,17 @@ var v_item_list = new Vue({
 var v_item_view = new Vue({
   el: '#item_view',
   data: {
+    global: global,
     name: '',
     status: {
       active: 'false',
       phone_number: '',
-      user_name: ''
+      user_name: '',
+      start_time: '',
+      end_time: ''
     },
     active_user: false,     // Computed to true, if current user is actively using this item.
+    duration: 'today',        // Duration of the activation (ie 4 hours).
     tomorrow: '',
     date: '',
     days: 0,
@@ -232,17 +281,41 @@ var v_item_view = new Vue({
 
       httpGet('/status/' + g_currentItemId, (json) => {
         this.status = json.status;
+        if (this.status.active == 'true') {
+          this.status.end_time = getLocalTime(this.status.end_time);
+          if (this.status.phone_number == g_currentPhoneNumber) {
+            this.active_user = true;
+          }
+        } else {
+          this.active_user = false;
+        }
       });
-      if (this.status.active == 'true'  &&  this.status.phone_number == g_currentPhoneNumber) {
-        this.active_user = true;
-      } else {
-        this.active_user = false;
-      }
     },
     activate_onClick: function() {
+      var startTime = new Date();
+      var endTime = new Date();
+      if (this.duration == 'today') {
+        endTime.setTime(startTime.getTime() + 24 * 60 * 60 * 1000);
+        endTime.setHours(0, 0);
+      }
+      else if (this.duration == 'hour1') {
+        endTime.setTime(startTime.getTime() + 1 * 60 * 60 * 1000);
+      }
+      else if (this.duration == 'hour2') {
+        endTime.setTime(startTime.getTime() + 2 * 60 * 60 * 1000);
+      }
+      else if (this.duration == 'hour4') {
+        endTime.setTime(startTime.getTime() + 4 * 60 * 60 * 1000);
+      }
+      else if (this.duration == 'hour8') {
+        endTime.setTime(startTime.getTime() + 8 * 60 * 60 * 1000);
+      }
+      
       var json = {
         item_id: g_currentItemId,
         active: 'true',
+        start_time: formatDateTime(startTime),
+        end_time: formatDateTime(endTime),
         phone_number: g_currentPhoneNumber
       };
       httpPost('/status', JSON.stringify(json), () => {
@@ -250,6 +323,7 @@ var v_item_view = new Vue({
         this.status.phone_number = g_currentPhoneNumber;
         this.status.user_name = g_currentUserName;
         this.active_user = true;
+        this.status.end_time = endTime;
       });
     },
     deactivate_onClick: function() {
@@ -414,215 +488,12 @@ var v_info_dialog = new Vue({
   }
 });
 
-var v_sign_out = new Vue({
-  el: '#sign_out',
-  data: {
-    show: false
-  },
-  methods: {
-    signOut_onClick: function() {
-      deleteCookie('user_name');
-      deleteCookie('phone_number');
-      updateAppState(APP_STATE.SIGN_IN);
-    }
-  }
-});
 
-
-function httpGet(url, callback) {
-  log('httpGet: ' + url);
-  fetch(SERVER + url)
-    .then(
-      function(response) {
-        if (response.status != 200) {
-          log('httpGet:  Fetch failure. Status Code: ' + response.status);
-          return;
-        }
-        response.json().then(function(json) {
-          log('httpPost: Response: ' + JSON.stringify(json));
-          callback(json);
-        });
-      }
-    )
-    .catch(function(err) {
-      log('httpGet: Fetch exception: ' + err);
-    });
-}
-
-function httpPost(url, body, callback) {
-  log('httpPost: ' + url + ' ' + body)
-  fetch(SERVER + url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
-      },
-      body: body})
-    .then(
-      function(response) {
-        if (response.status != 200) {
-          log('httpPost:  Fetch failure. Status Code: ' + response.status);
-          return;
-        }
-        response.json().then(function(json) {
-          log('httpPost: Response: ' + JSON.stringify(json));
-          callback(json);
-        });
-      }
-    )
-    .catch(function(err) {
-      log('httpPost: Fetch exception: ' + err);
-    });
-}
-
-function httpPatch(url, body, callback) {
-  log('httpPatch: ' + url + ' ' + body)
-  fetch(SERVER + url, {
-      method: 'PATCH',
-      headers: {
-        'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
-      },
-      body: body})
-    .then(
-      function(response) {
-        if (response.status != 200) {
-          log('httpPatch:  Fetch failure. Status Code: ' + response.status);
-          return;
-        }
-        response.json().then(function(json) {
-          log('httpPatch: Response: ' + JSON.stringify(json));
-          callback(json);
-        });
-      }
-    )
-    .catch(function(err) {
-      log('httpPatch: Fetch exception: ' + err);
-    });
-}
-
-function httpDelete(url, callback) {
-  log('httpDelete: ' + url);
-  fetch(SERVER + url, {method: 'DELETE'})
-    .then(
-      function(response) {
-        if (response.status != 200) {
-          log('httpDelete:  Fetch failure. Status Code: ' + response.status);
-          return;
-        }
-        response.json().then(function(json) {
-          log('httpDelete: Response: ' + JSON.stringify(json));
-          callback(json);
-        });
-      }
-    )
-    .catch(function(err) {
-      log('httpDelete: Fetch exception: ' + err);
-    });
-}
-
-function formatDate(date) {
-    var result = date.getFullYear() + '-';
-    if (date.getMonth() < 10) {
-      result += '0';
-    } 
-    result += date.getMonth() + 1 + '-';
-    if (date.getDate() < 10) {
-      result += '0';
-    }
-    result += date.getDate();
-    return result;
-}
-
-function getLocaleDate(dateString) {
-  // Expects the format yyyy-mm-dd
-  var parts = dateString.split('-');
-  // Note - Javascript counts months from 0, hence the -1 for that part.
-  var date = new Date(parts[0], parts[1] - 1, parts[2]); 
-  return date;
-}
-
-function getDayString(date) {
-  var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  return days[date.getDay()];
-}
-
-function getMonthString(date) {
-  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return months[date.getMonth()];
-}
-
-function stripPhoneNumber(phoneNumber) {
-  var result = '';
-  for (var i = 0; i < phoneNumber.length; i++) {
-    if (phoneNumber[i] >= '0' && phoneNumber[i] <= '9') {
-      result += phoneNumber[i];
-    }
-  }
-  if (result.length < 10) {
-      return null;
-  }
-  result = result.substr(result.length - 10);
-  return result;
-}
-
-function formatPhoneNumber(phoneNumber) {
-  var result = '';
-  var pos = 0;
-  for (var i = 0; i < phoneNumber.length; i++) {
-    if (pos == 3  ||  pos == 6) {
-      result += '-';
-    }
-    pos++;
-    result += phoneNumber[i];
-  }
-  return result;
-}
-
-function formatDate(dateString) {
-  // Expects the format yyyy-mm-dd
-  var parts = dateString.split('-');
-  // Note - Javascript counts months from 0, hence the -1 for that part.
-  var date = new Date(parts[0], parts[1] - 1, parts[2]);
-  return getDayString(date) + ', ' + getMonthString(date) + ' ' + date.getDate();
-}
-
-function log(text) {
-  var date = new Date();
-  console.log(date.toLocaleTimeString() + ' - ' + text);
-}
-
-function getCookie(key) {
-    var value = ' ' + document.cookie;
-    var start = value.indexOf(' ' + key + '=');
-    if (start == -1) {
-        value = null;
-    }
-    else {
-        start = value.indexOf('=', start) + 1;
-        var end = value.indexOf(';', start);
-        if (end == -1) {
-            end = value.length;
-        }
-        value = value.substring(start, end);
-    }
-    return value;
-}
-
-var deleteCookie = function(key) {
-    document.cookie = key + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-};
-
-
-
-g_currentUserName = getCookie('user_name');
-g_currentPhoneNumber = getCookie('phone_number');
 
 if (g_currentUserName == null) {
   updateAppState(APP_STATE.SIGN_IN);
 }
 else {
-  v_sign_out.show = true;
   httpGet('/items/' + g_currentPhoneNumber, function(json) {
     v_item_list.items = json.items;
     updateAppState(APP_STATE.ITEM_LIST);

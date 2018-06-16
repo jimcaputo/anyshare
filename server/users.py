@@ -52,20 +52,29 @@ def create(request):
 	return response
 	
 
-def validate(request):
+def update(request):
 	user = request.get_json()
-	sql = 'SELECT validation_code FROM validation_codes WHERE phone_number = "{}" AND validation_code = "{}";' \
-		.format(user['phone_number'], user['validation_code'])
-	rows, response = database.read(sql)
+	if 'validation_code' in user:
+		sql = 'SELECT validation_code FROM validation_codes WHERE phone_number = "{}" AND validation_code = "{}";' \
+			.format(user['phone_number'], user['validation_code'])
+		rows, response = database.read(sql)
 
-	if response == 'Success':
-		if len(rows) == 1:
+		if response == 'Success':
+			if len(rows) == 1:
+				response = {'code': 200}
+			else:
+				response = {'code': 404, 'message': 'Incorrect validation code'}	
+		else:
+	   		response = {'code': 500, 'message': 'users.py:update - ' + response}
+	elif 'user_name' in user:
+		sql = 'UPDATE users SET user_name = "{}" WHERE phone_number = "{}"'.format(user['user_name'], user['phone_number'])
+		response, _ = database.insert_update_delete(sql)
+	
+		if response == 'Success':
 			response = {'code': 200}
 		else:
-			response = {'code': 404, 'message': 'Incorrect validation code'}	
-	else:
-   		response = {'code': 500, 'message': 'users.py:validate - ' + response}
- 
+	   		response = {'code': 500, 'message': 'users.py:update - ' + response}
+
 	return response
 
 
