@@ -28,7 +28,7 @@ def get(phone_number):
 def create(request):
     item = request.get_json() 
     sql = 'CALL item_add("{}", "{}");'.format(item['name'], item['phone_number_owner']) 
-    response, _ = database.insert_update_delete(sql)
+    response = database.insert_update_delete(sql)
 
     if response == 'Success':
         response = {'code': 200}
@@ -40,7 +40,7 @@ def create(request):
 
 def delete(item_id):
     sql = 'CALL item_delete({});'.format(item_id)
-    response, _ = database.insert_update_delete(sql)
+    response = database.insert_update_delete(sql)
 
     if response == 'Success':
         response = {'code': 200}

@@ -11,19 +11,17 @@ def insert_update_delete(sql):
 	cursor = db.cursor()
 
 	response = ''
-	rows_updated = 0
 	try:
 		cursor.execute(sql)
 		db.commit()
 		response = 'Success'
-		rows_updated = cursor.rowcount
 	except Exception as err:
 		db.rollback()
 		response = 'database.py:insert_update_delete - ' + str(err)
 		print(response)
 		
 	db.close()
-	return response, rows_updated
+	return response
 
 
 def read(sql):
@@ -47,9 +45,9 @@ def read(sql):
 '''
 
 DELIMITER $$
-CREATE PROCEDURE create_user(p_phone_number VARCHAR(20), p_user_name VARCHAR(20), p_validation_code VARCHAR(10))
+CREATE PROCEDURE create_user(p_phone_number VARCHAR(20), p_validation_code VARCHAR(10))
 BEGIN
-INSERT INTO users (phone_number, user_name) VALUES (p_phone_number, p_user_name) ON DUPLICATE KEY UPDATE user_name=p_user_name;
+INSERT INTO users (phone_number) VALUES (p_phone_number) ON DUPLICATE KEY UPDATE phone_number=p_phone_number;
 INSERT INTO validation_codes (phone_number, validation_code, expire_time) VALUES (p_phone_number, p_validation_code, DATE_ADD(NOW(), INTERVAL 1 HOUR));
 END $$
 DELIMITER ; $$
@@ -77,7 +75,7 @@ DELIMITER ; $$
 CREATE TABLE users
 (
 phone_number VARCHAR(20) NOT NULL,
-user_name VARCHAR(20) NOT NULL,
+user_name VARCHAR(20),
 create_date DATETIME DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY(phone_number)
 );
@@ -107,6 +105,7 @@ phone_number_owner VARCHAR(20) NOT NULL,
 active BOOLEAN NOT NULL,
 active_phone_number VARCHAR(20),
 active_start_time DATETIME,
+active_end_time DATETIME,
 PRIMARY KEY(item_id)
 );
 

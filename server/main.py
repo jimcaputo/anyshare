@@ -1,6 +1,7 @@
 import json
 from flask import Flask
 from flask import request
+from flask import Response
 from flask_cors import CORS
 
 import database
@@ -21,6 +22,8 @@ def http_home():
 @app.route('/web/<file_name>')
 def http_web(file_name):
     f = open('../web/' + file_name, 'r')
+    if 'css' in file_name:
+        return Response(f.read(), mimetype='text/css')
     return f.read()
 
 @app.route('/media/<file_name>')

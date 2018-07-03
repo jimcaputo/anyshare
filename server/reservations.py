@@ -43,7 +43,7 @@ def create(request):
     for reservation in reservations:
         sql += '({}, "{}", "{}"), '.format(reservation['item_id'], reservation['date'], reservation['phone_number'])
     sql = sql[:-2] + ';'
-    response, _ = database.insert_update_delete(sql)
+    response = database.insert_update_delete(sql)
 
     if response == 'Success':
         response = {'code': 200}
@@ -57,7 +57,7 @@ def create(request):
 # matched the current user (ie you can only delete your own reservations).
 def delete(item_id, date):
     sql = 'DELETE FROM reservations WHERE item_id = {} AND date = "{}"'.format(item_id, date)
-    response, _ = database.insert_update_delete(sql)
+    response = database.insert_update_delete(sql)
         
     if response == 'Success':
         response = {'code': 200}

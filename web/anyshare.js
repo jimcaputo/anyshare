@@ -3,7 +3,6 @@ var SERVER = 'http://127.0.0.1:8080';
 
 var APP_STATE = {
     SIGN_IN: 'SIGN_IN',
-    USER_LIST: 'USER_LIST',
     ITEM_LIST: 'ITEM_LIST',
     ITEM_VIEW: 'ITEM_VIEW',
     RESERVATIONS: 'RESERVATIONS',
@@ -53,7 +52,6 @@ function updateAppState(appState, updateBrowserState = true) {
   v_navigation.app_state = appState;
   
   v_sign_in.$el.style.display = 'none';
-  v_user_list.$el.style.display = 'none';
   v_item_view.$el.style.display = 'none';
   v_item_list.$el.style.display = 'none';
   v_reservations.$el.style.display = 'none';
@@ -65,9 +63,6 @@ function updateAppState(appState, updateBrowserState = true) {
 
   if (appState == APP_STATE.SIGN_IN) {
     v_sign_in.show();
-  }
-  else if (appState == APP_STATE.USER_LIST) {
-    v_user_list.show();
   }
   else if (appState == APP_STATE.ITEM_LIST) {
     v_item_list.show();
@@ -106,7 +101,6 @@ var v_sign_in = new Vue({
   el: '#sign_in',
   data: {
     phone_number: '',
-    user_name: '',
     register_clicked: false,
     verification_code: '',
     show_verify: false
@@ -115,7 +109,6 @@ var v_sign_in = new Vue({
     show: function() {
       this.$el.style.display = 'block';
       this.phone_number = '';
-      this.user_name = '';
       this.register_clicked = false;
       this.verification_code = '';
       this.show_verify = false;
@@ -125,8 +118,7 @@ var v_sign_in = new Vue({
       this.show_verify = true;
 
       var json = {
-        phone_number: stripPhoneNumber(this.phone_number),
-        user_name: this.user_name
+        phone_number: stripPhoneNumber(this.phone_number)
       };
       httpPost('/users', JSON.stringify(json), () => {
       });
@@ -137,15 +129,29 @@ var v_sign_in = new Vue({
         validation_code: this.verification_code
       };
       httpPatch('/users', JSON.stringify(json), () => {
-        document.cookie = 'user_name=' + this.user_name + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
-        document.cookie = 'phone_number=' + stripPhoneNumber(this.phone_number) + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
-        g_currentUserName = this.user_name;
-        g_currentPhoneNumber = stripPhoneNumber(this.phone_number);
+        httpGet('/users/' + stripPhoneNumber(this.phone_number), function(json) {
+          document.cookie = 'phone_number=' + json.user.phone_number + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+          g_currentPhoneNumber = json.user.phone_number;
 
-        httpGet('/items/' + g_currentPhoneNumber, function(json) {
-          v_item_list.items = json.items;
-          updateAppState(APP_STATE.ITEM_LIST);
+          if (json.user.user_name != null) {
+            document.cookie = 'user_name=' + json.user.user_name + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+            g_currentUserName = json.user.user_name;
+            v_header.userName = json.user.user_name;
+          }
+          else {
+            v_user_dialog.show();
+          }
+
+          httpGet('/items/' + g_currentPhoneNumber, function(json) {
+            v_item_list.items = json.items;
+            updateAppState(APP_STATE.ITEM_LIST);
+          });
         });
+      }, 
+      (error) => {
+        if (error == '404') {
+          v_info_dialog.show('Verification Failure', 'Incorrect Verification Code', true);
+        }
       });
     }
   }
@@ -154,11 +160,27 @@ var v_sign_in = new Vue({
 var v_user_dialog = new Vue({
   el: '#user_dialog',
   data: {
-    
+    user_name: g_currentUserName
   },
   methods: {
-    show: function(title, message, timeout = false) {
+    show: function() {
       document.getElementById('user_dialog').classList.add('active');
+    },
+    setUserName_onClick: function() {
+      var json = {
+        phone_number: stripPhoneNumber(g_currentPhoneNumber),
+        user_name: this.user_name
+      };
+      httpPatch('/users', JSON.stringify(json), () => {
+        document.cookie = 'user_name=' + this.user_name + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+        g_currentUserName = this.user_name;
+        v_header.userName = this.user_name;
+        document.getElementById('user_dialog').classList.remove('active');
+      });
+      
+    },
+    cancel_onClick: function() {
+      document.getElementById('user_dialog').classList.remove('active');
     },
     signOut_onClick: function() {
       document.getElementById('user_dialog').classList.remove('active');
@@ -168,34 +190,11 @@ var v_user_dialog = new Vue({
       g_currentItemName = '';
       g_currentItemPhoneNumberOwner = '';
 
-      v_header.data.userName = '';
+      v_header.userName = '';
 
       deleteCookie('user_name');
       deleteCookie('phone_number');
       updateAppState(APP_STATE.SIGN_IN);
-    },
-    cancel_onClick: function() {
-      document.getElementById('user_dialog').classList.remove('active');
-    }
-  }
-});
-
-var v_user_list = new Vue({
-  el: '#user_list',
-  data: {
-    users: []
-  },
-  methods: {
-    show: function() {
-      this.$el.style.display = 'block';
-    },
-    user_onClick: function(user) {
-      g_currentUserName = user.user_name;
-      g_currentPhoneNumber = user.phone_number;
-      httpGet('/items/' + user.phone_number, function(json) {
-        v_item_list.items = json.items;
-        updateAppState(APP_STATE.ITEM_LIST);
-      });
     }
   }
 });
@@ -434,13 +433,13 @@ var v_manage_users = new Vue({
         return;
       }
       httpGet('/users/' + searchPhoneNumber, (json) => {
-        if (json.users.length > 0) { 
-          this.search_user = json.users[0];
-          this.show_search_result = true;
-          this.search_phone_number = '';
-        }
-        else {
-          v_info_dialog.show('User Search', 'Phone number not found');
+        this.search_user = json.user;
+        this.show_search_result = true;
+        this.search_phone_number = '';
+      },
+      (error) => {
+        if (error == '404') {
+          v_info_dialog.show('User Search', 'Phone number not found', true); 
         }
       });
     },
@@ -489,11 +488,21 @@ var v_info_dialog = new Vue({
 });
 
 
-
-if (g_currentUserName == null) {
+if (g_currentPhoneNumber == null) {
   updateAppState(APP_STATE.SIGN_IN);
 }
 else {
+  if (g_currentUserName == null) {
+    v_user_dialog.show();
+  } 
+  else {
+    // This is a little bit of a hack, but we set the header initially as display=none because otherwise the html
+    // initially displays empty state prior to showing the sign in screen.  But if we're already signed in, then 
+    // we can now set display=block.
+    document.getElementById('user_name').style.display = 'block';
+  }
+
+  // Start by getting the list of items that the user has access to.  
   httpGet('/items/' + g_currentPhoneNumber, function(json) {
     v_item_list.items = json.items;
     updateAppState(APP_STATE.ITEM_LIST);

@@ -66,7 +66,7 @@ def set(request):
 	else:
 		sql = 'UPDATE items SET active=false, active_phone_number=null, active_start_time=null, ' \
 			'active_end_time=null WHERE item_id = {};'.format(status['item_id'])
-	response, _ = database.insert_update_delete(sql)
+	response = database.insert_update_delete(sql)
 	
 	if response == 'Success':
 		response = {'code': 200}
