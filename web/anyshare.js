@@ -1,5 +1,5 @@
-//var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
-var SERVER = 'http://127.0.0.1:8080';
+var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
+//var SERVER = 'http://127.0.0.1:8080';
 
 var APP_STATE = {
     SIGN_IN: 'SIGN_IN',
