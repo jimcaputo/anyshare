@@ -5,7 +5,7 @@ import database
 
 # Retrieve the list of items for this user
 def get(phone_number):
-    sql = 'SELECT i.item_id, i.name, i.phone_number_owner FROM items i ' \
+    sql = 'SELECT i.item_id, i.name, i.phone_number_owner, iu.user_default FROM items i ' \
         'JOIN items_users iu ON i.item_id = iu.item_id ' \
         'WHERE iu.phone_number = {} ORDER BY i.name'.format(phone_number)
     rows, response = database.read(sql)
@@ -16,7 +16,8 @@ def get(phone_number):
             items.append({
                 'item_id': str(row[0]),
                 'name': row[1],
-                'phone_number_owner': str(row[2])
+                'phone_number_owner': str(row[2]),
+                'user_default': row[3]
             })
         response = {'code': 200, 'items': items}
     else:

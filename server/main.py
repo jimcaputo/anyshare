@@ -141,6 +141,14 @@ def http_items_users_add():
         response = {'code': 500, 'message': 'main.py:items_users_add - ' + str(err)}
     return json.dumps(response), int(response['code'])
 
+# Patch - Currently only used for setting user_default
+@app.route('/items_users', methods=['PATCH'])
+def http_items_users_patch():
+    try:
+        response = items_users.update(request)
+    except Exception as err:
+        response = {'code': 500, 'message': 'main.py:items_users_patch - ' + str(err)}
+    return json.dumps(response), int(response['code'])
 
 # DELETE - Deletes a user from a given item
 @app.route('/items_users/<item_id>/<phone_number>', methods=['DELETE'])

@@ -218,6 +218,18 @@ var v_item_list = new Vue({
       v_item_view.name = item.name;
       updateAppState(APP_STATE.ITEM_VIEW);
     },
+    default_onClick: function(item) {
+      var json = {
+        phone_number: g_currentPhoneNumber,
+        item_id: item.item_id,
+        user_default: !item.user_default
+      }
+      httpPatch('/items_users', JSON.stringify(json), () => {
+        httpGet('/items/' + g_currentPhoneNumber, (json) => {
+          this.items = json.items;
+        });
+      });
+    },
     delete_onClick: function(item) {
       item_delete = item;
       document.getElementById('item_delete_dialog').classList.add('active');
@@ -505,7 +517,24 @@ else {
   // Start by getting the list of items that the user has access to.  
   httpGet('/items/' + g_currentPhoneNumber, function(json) {
     v_item_list.items = json.items;
-    updateAppState(APP_STATE.ITEM_LIST);
+      
+    var user_default_item = null;
+    for (var i = 0; i < json.items.length; i++) {
+      if (json.items[i].user_default == true) {
+        user_default_item = json.items[i];
+        break;
+      }
+    }
+    if (user_default_item) {
+      g_currentItemId = user_default_item.item_id;
+      g_currentItemName = user_default_item.name;
+      g_currentItemPhoneNumberOwner = user_default_item.phone_number_owner;
+      v_item_view.name = user_default_item.name;
+      updateAppState(APP_STATE.ITEM_VIEW);
+    }
+    else {
+      updateAppState(APP_STATE.ITEM_LIST);
+    }
   });
 }
 document.getElementById('navigation').style.display = 'block';

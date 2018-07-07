@@ -180,6 +180,7 @@
         <tr>
           <th>Item</th>
           <th>Name</th>
+          <th>Default</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -191,6 +192,9 @@
           </td>
           <td>
             <span class="pseudoLink">{{ item.name }}</span>
+          </td>
+          <td style="text-align: center">
+            <input type="checkbox" v-model="item.user_default" v-on:click.stop="default_onClick(item)">
           </td>
           <td>
             <button v-if="item.phone_number_owner == global.currentPhoneNumber()"
