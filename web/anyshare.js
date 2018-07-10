@@ -1,5 +1,5 @@
-var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
-//var SERVER = 'http://127.0.0.1:8080';
+//var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
+var SERVER = 'http://127.0.0.1:8080';
 
 var APP_STATE = {
     SIGN_IN: 'SIGN_IN',
@@ -408,16 +408,83 @@ var v_reservations = new Vue({
   el: '#reservations',
   data: {
     global: global,
-    reservations: []
+    reservations: [],
+    groupedReservations: []
   },
   methods: {
     show: function() {
+      this.groupedReservations = new Array();
+      for (var i = 0; i < this.reservations.length; i++) {
+        this.groupedReservations.push({
+          id: '',
+          phoneNumber: this.reservations[i].phone_number,
+          userName: this.reservations[i].user_name,
+          startDate: this.reservations[i].date,
+          endDate: '',
+          days: new Array()
+        });
+        var index = this.groupedReservations.length - 1;
+        this.groupedReservations[index].days.push({
+          phoneNumber: this.reservations[i].phone_number,
+          userName: this.reservations[i].user_name,
+          date: this.reservations[i].date
+        });
+        for (var j = i + 1; j < this.reservations.length; j++) {
+          var date1 = new Date(this.reservations[j - 1].date);
+          var date2 = new Date(this.reservations[j].date);
+          date2.setTime(date2.getTime() - 24 * 60 * 60 * 1000);
+          if (this.reservations[j - 1].phone_number == this.reservations[j].phone_number  &&  date1.getTime() == date2.getTime()) {
+            this.groupedReservations[index].days.push({
+              phoneNumber: this.reservations[j].phone_number,
+              userName: this.reservations[j].user_name,
+              date: this.reservations[j].date,
+              display: false
+            });
+          }
+          else {
+            break;
+          }
+        }
+        i = j - 1;
+        this.groupedReservations[index].endDate = this.reservations[i].date;
+        this.groupedReservations[index].id = 'id' + 
+          this.groupedReservations[index].startDate + this.groupedReservations[index].endDate;
+
+        // Reset the arrow to original state.
+        var checkbox = document.getElementById(this.groupedReservations[index].id);
+        if (checkbox) {
+          checkbox.checked = false;
+        }
+      } 
       this.$el.style.display = 'block';
+    },
+    expandCollapse: function(group) {
+      var checkbox = document.getElementById(group.id);
+      checkbox.checked = !checkbox.checked;
+
+      for (var i = 0; i < group.days.length; i++) {
+        var row = document.getElementById(group.days[i].date);
+        group.days[i].display = checkbox.checked;
+        Vue.set(group.days, i, group.days[i]);
+      }
+    },
+    deleteAll_onClick: function(group) {
+      document.getElementById(group.id).style.display = "none";
+      group.days.forEach((reservation) => {
+        this.delete_onClick(reservation);
+      })
     },
     delete_onClick: function(reservation) {
       httpDelete('/reservations/' + g_currentItemId + '/' + reservation.date, () => {
-        var i = this.reservations.indexOf(reservation);
-        this.reservations.splice(i, 1);
+        var index = -1;
+        for (var i = 0; i < this.reservations.length; i++) {
+          if (this.reservations[i].date == reservation.date) {
+            index = i;
+            break;
+          }
+        }
+        this.reservations.splice(index, 1);
+        this.show();
       });
     }
   }

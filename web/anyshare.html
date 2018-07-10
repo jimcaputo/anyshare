@@ -188,7 +188,7 @@
         <tr v-for="item in items" v-on:click="item_onClick(item)">
           <td>
             <img v-bind:src="'/media/' + item.phone_number_owner + '-' + item.name + '.jpg'" 
-                style="width:172px; height:100px">
+                style="width:136px; height:80px">
           </td>
           <td>
             <span class="pseudoLink">{{ item.name }}</span>
@@ -308,9 +308,11 @@
   </div>
 
   <div id="reservations" style="display:none">
-    <table class="table table-striped table-hover">
+    
+    <table class="table table-hover c-hand">
       <thead>
         <tr>
+          <th></th>
           <th>Date</th>
           <th>Mug Shot</th>
           <th>User</th>
@@ -318,19 +320,50 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="reservation in reservations">
-          <td>{{ global.displayDate(reservation.date) }}</td>
-          <td>
-            <img v-bind:src="'/media/' + reservation.phone_number + '.jpg'" style="width:80px; height:106px">
-          </td>
-          <td>{{ reservation.user_name }}</td>
-          <td>
-            <button v-if="reservation.phone_number == global.currentPhoneNumber()"
-                v-on:click="delete_onClick(reservation)" class="btn btn-primary">
-              Delete
-            </button>
-          </td>
-        </tr>
+        
+        <template v-for="group in groupedReservations">
+          <tr>
+            <td>
+              <div class="accordion">
+                <input :id="group.id" :key="group.id" type="checkbox" name="accordion-checkbox" hidden>
+                <label class="accordion-header c-hand" v-on:click="expandCollapse(group)">
+                  <i class="icon icon-arrow-right mr-1"></i>
+                </label>
+              </div>
+            </td>
+            <td v-on:click="expandCollapse(group)">
+              {{ global.displayDate(group.startDate) }}
+              <br>
+              {{ global.displayDate(group.endDate) }}
+            </td>
+            <td v-on:click="expandCollapse(group)">
+              <img v-bind:src="'/media/' + group.phoneNumber + '.jpg'" style="width:80px; height:106px">
+            </td>
+            <td v-on:click="expandCollapse(group)">
+              {{ group.userName }}
+            </td>
+            <td v-on:click="expandCollapse(group)">
+              <button v-if="group.phoneNumber == global.currentPhoneNumber()"
+                  v-on:click.stop="deleteAll_onClick(group)" class="btn btn-primary">
+                Delete All
+              </button>
+            </td>
+          </tr>
+
+          <template v-for="reservation in group.days">
+            <tr :id="reservation.date" v-show="reservation.display" style="background: #f8f9fa">
+              <td></td>
+              <td colspan="2" style="text-align: center">{{ reservation.date }}</td>
+              <td></td>
+              <td>
+                <button v-if="reservation.phoneNumber == global.currentPhoneNumber()"
+                    v-on:click="delete_onClick(reservation)" class="btn btn-primary">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </template>
+        </template>
       </tbody>
     </table>
   </div>

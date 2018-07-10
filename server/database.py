@@ -113,6 +113,7 @@ CREATE TABLE items_users
 (
 	item_id INT NOT NULL,
 	phone_number VARCHAR(20) NOT NULL,
+	user_default BOOLEAN,
 	PRIMARY KEY(item_id, phone_number)
 );
 
