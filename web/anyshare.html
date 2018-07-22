@@ -13,9 +13,9 @@
   <meta name="description" content="Anything Shared">
   <meta name="keywords" content="anything shared">  
 
-  <link rel="stylesheet" href="../web/spectre.min.css">
-  <link rel="stylesheet" href="../web/spectre-exp.min.css">
-  <link rel="stylesheet" href="../web/spectre-icons.min.css">
+  <link rel="stylesheet" href="spectre.min.css">
+  <link rel="stylesheet" href="spectre-exp.min.css">
+  <link rel="stylesheet" href="spectre-icons.min.css">
 
   <!--
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
@@ -43,67 +43,76 @@
   </style>
 
 
-  <script src="../web/vue.js"></script>
+  <script src="vue.js"></script>
   <!-- <script src="https://unpkg.com/vue"></script> -->
 </head>
 
 <body class="text-center">
   <div class="container grid-xs">
   
-  <div id="header" style="margin-top: .7rem; margin-bottom: 0rem">
-    <div class="container">
-      <div class="columns">
-        <div class="col-3"></div>
-        <div class="col-6">
-          <h3>Anything Shared</h3>
-        </div>
-        <div id="user_name" class="col-3" style="display: none; padding: 1% 0%; text-align: right">
-          <span v-on:click="user_onClick()" class="pseudoLink">{{ userName }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <h3 style="margin-top: .7rem; margin-bottom: .1rem">AnyShare</h3>
 
   <div id="navigation" style="display: none">
-    <div v-if="app_state == 'SIGN_IN'">
-      <ul class="breadcrumb">
-        <li class="breadcrumb-item">Register</li>
-      </ul>
+    <div class="container">
+      <div class="columns">
+        <div class="col-1"></div>
+        <div class="col-8" style="text-align: left">
+          <div v-if="app_state == 'SIGN_IN'">
+            <ul class="breadcrumb">
+              <li class="breadcrumb-item">Register</li>
+            </ul>
+          </div>
+          <div v-else-if="app_state == 'ITEM_LIST'">
+            <ul class="breadcrumb">
+              <li class="breadcrumb-item">Items</li>
+            </ul> 
+          </div>
+          <div v-else-if="app_state == 'ITEM_VIEW'">
+            <ul class="breadcrumb">
+              <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Items</span></li>
+              <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_VIEW')">{{ global.currentItemName() }}</span></li>
+            </ul> 
+          </div>
+          <div v-else-if="app_state == 'RESERVATIONS'">
+            <ul class="breadcrumb">
+              <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Items</span></li>
+              <li class="breadcrumb-item">
+                <span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">{{ global.currentItemName() }}</span>
+              </li>
+              <li class="breadcrumb-item">Reservations</li>
+            </ul> 
+          </div>
+          <div v-else-if="app_state == 'MANAGE_USERS'">
+            <ul class="breadcrumb">
+              <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Items</span></li>
+              <li class="breadcrumb-item">
+                <span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">{{ global.currentItemName() }}</span>
+              </li>
+              <li class="breadcrumb-item">Users</li>
+            </ul> 
+          </div>
+        </div>
+        <div class="col-2">
+          <div id="user_name" style="text-align: right">
+            <img v-bind:src="'/media/user.png'" v-on:click="user_onClick()"
+                class="c-hand" style="margin-top: .45rem; height: 25px">
+          </div>
+        </div>
+        <div class="col-1"></div>
+      </div>
     </div>
-    <div v-else-if="app_state == 'ITEM_LIST'">
-      <ul class="breadcrumb">
-        <li class="breadcrumb-item">Item List</li>
-      </ul> 
-    </div>
-    <div v-else-if="app_state == 'ITEM_VIEW'">
-      <ul class="breadcrumb">
-        <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Item List</span></li>
-        <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_VIEW')">{{ global.currentItemName() }}</span></li>
-      </ul> 
-    </div>
-    <div v-else-if="app_state == 'RESERVATIONS'">
-      <ul class="breadcrumb">
-        <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Item List</span></li>
-        <li class="breadcrumb-item">
-          <span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">{{ global.currentItemName() }}</span>
-        </li>
-        <li class="breadcrumb-item">Reservations</li>
-      </ul> 
-   </div>
-   <div v-else-if="app_state == 'MANAGE_USERS'">
-      <ul class="breadcrumb">
-        <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Item List</span></li>
-        <li class="breadcrumb-item">
-          <span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">{{ global.currentItemName() }}</span>
-        </li>
-        <li class="breadcrumb-item">Manage Users</li>
-      </ul> 
-   </div>
+    <div class="divider" style="margin-bottom: 14px"></div>
   </div>
 
-  <div class="divider" style="margin-bottom: 14px"></div>
-
   <div id="sign_in" style="display: none">
+    <div class="divider" style="margin: 14px"></div>
+    <p>
+      First time using this device
+      <br>
+      Please verify your identity
+    </p>
+    
+
     <div class="container">
       <div class="columns">
         <div class="col-2"></div>
@@ -353,7 +362,7 @@
           <template v-for="reservation in group.days">
             <tr :id="reservation.date" v-show="reservation.display" style="background: #f8f9fa">
               <td></td>
-              <td colspan="2" style="text-align: center">{{ reservation.date }}</td>
+              <td colspan="2" style="text-align: center">{{ global.displayDate(reservation.date) }}</td>
               <td></td>
               <td>
                 <button v-if="reservation.phoneNumber == global.currentPhoneNumber()"
@@ -450,6 +459,6 @@
 
   </div>
 
-  <script src="../web/util.js"></script>
-  <script src="../web/anyshare.js"></script>
+  <script src="util.js"></script>
+  <script src="anyshare.js"></script>
 </body>

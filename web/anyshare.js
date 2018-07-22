@@ -1,4 +1,4 @@
-//var SERVER = 'http://lakeuniontech.asuscomm.com:8080';
+//var SERVER = 'http://lakeuniontech.asuscomm.com';
 var SERVER = 'http://127.0.0.1:8080';
 
 var APP_STATE = {
@@ -34,20 +34,6 @@ var global = {
 };
 
 
-var v_header = new Vue({
-  el: '#header',
-  data: {
-    global: global,
-    userName: g_currentUserName
-  },
-  methods: {
-    user_onClick: function() {
-      v_user_dialog.show();
-    }
-  }
-});
-
-
 function updateAppState(appState, updateBrowserState = true) {
   v_navigation.app_state = appState;
   
@@ -59,6 +45,13 @@ function updateAppState(appState, updateBrowserState = true) {
 
   if (updateBrowserState == true) {
     history.pushState({app_state: appState}, '', '');
+  }
+
+  if (appState == APP_STATE.SIGN_IN) {
+    v_navigation.$el.style.display = 'none';
+  }
+  else {
+    v_navigation.$el.style.display = 'block'; 
   }
 
   if (appState == APP_STATE.SIGN_IN) {
@@ -93,6 +86,9 @@ var v_navigation = new Vue({
   methods: {
     onClick: function(appState) {
       updateAppState(appState);
+    },
+    user_onClick: function() {
+      v_user_dialog.show();
     }
   }
 });
@@ -136,7 +132,6 @@ var v_sign_in = new Vue({
           if (json.user.user_name != null) {
             document.cookie = 'user_name=' + json.user.user_name + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
             g_currentUserName = json.user.user_name;
-            v_header.userName = json.user.user_name;
           }
           else {
             v_user_dialog.show();
@@ -160,10 +155,11 @@ var v_sign_in = new Vue({
 var v_user_dialog = new Vue({
   el: '#user_dialog',
   data: {
-    user_name: g_currentUserName
+    user_name: ''
   },
   methods: {
     show: function() {
+      this.user_name = g_currentUserName;
       document.getElementById('user_dialog').classList.add('active');
     },
     setUserName_onClick: function() {
@@ -174,7 +170,6 @@ var v_user_dialog = new Vue({
       httpPatch('/users', JSON.stringify(json), () => {
         document.cookie = 'user_name=' + this.user_name + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
         g_currentUserName = this.user_name;
-        v_header.userName = this.user_name;
         document.getElementById('user_dialog').classList.remove('active');
       });
       
@@ -189,8 +184,6 @@ var v_user_dialog = new Vue({
       g_currentItemId = 0;
       g_currentItemName = '';
       g_currentItemPhoneNumberOwner = '';
-
-      v_header.userName = '';
 
       deleteCookie('user_name');
       deleteCookie('phone_number');
@@ -293,7 +286,9 @@ var v_item_view = new Vue({
       httpGet('/status/' + g_currentItemId, (json) => {
         this.status = json.status;
         if (this.status.active == 'true') {
-          this.status.end_time = getLocalTime(this.status.end_time);
+          if (this.status.end_time) {
+            this.status.end_time = getLocalTime(this.status.end_time);
+          }
           if (this.status.phone_number == g_currentPhoneNumber) {
             this.active_user = true;
           }
@@ -574,12 +569,6 @@ else {
   if (g_currentUserName == null) {
     v_user_dialog.show();
   } 
-  else {
-    // This is a little bit of a hack, but we set the header initially as display=none because otherwise the html
-    // initially displays empty state prior to showing the sign in screen.  But if we're already signed in, then 
-    // we can now set display=block.
-    document.getElementById('user_name').style.display = 'block';
-  }
 
   // Start by getting the list of items that the user has access to.  
   httpGet('/items/' + g_currentPhoneNumber, function(json) {
@@ -604,7 +593,7 @@ else {
     }
   });
 }
-document.getElementById('navigation').style.display = 'block';
+
 
 
 

@@ -17,7 +17,11 @@ CORS(app)
 
 @app.route('/')
 def http_home():
-    return 'Anything Shared!'
+    return http_web('anyshare.html')
+
+@app.route('/<file_name>')
+def http_root(file_name):
+    return http_web(file_name)
 
 @app.route('/web/<file_name>')
 def http_web(file_name):
@@ -28,6 +32,9 @@ def http_web(file_name):
 
 @app.route('/media/<file_name>')
 def http_media(file_name):
+    if 'favicon.ico' in file_name:
+        return ''
+
     try:
         f = open('../web/media/' + file_name, 'rb')
         return f.read()
