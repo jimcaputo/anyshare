@@ -1,5 +1,3 @@
-//var SERVER = 'http://lakeuniontech.asuscomm.com';
-var SERVER = 'http://127.0.0.1:8080';
 
 var APP_STATE = {
     SIGN_IN: 'SIGN_IN',
@@ -359,12 +357,12 @@ var v_item_view = new Vue({
       // read:  "Apr 1 - Apr 1"  Then multiply to get the number of seconds.  
       endDate.setTime(endDate.getTime() + (this.days - 1) * 24 * 60 * 60 * 1000);
 
-      var url = '/reservations/' + g_currentItemId + '/' + formatDate(startDate) + '/' + formatDate(endDate);
+      var url = `/reservations/${g_currentItemId}/${formatDate(startDate)}/${formatDate(endDate)}`;
       httpGet(url, (json) => {
         this.available = json.reservations.length == 0 ? true : false;
         var message = json.reservations.length == 0 ? 'AVAILABLE: ' : 'UNAVAILABLE: ';
-        message += getDayString(startDate) + ', ' + getMonthString(startDate) + ' ' + startDate.getDate() +
-            ' - ' + getDayString(endDate) + ', ' + getMonthString(endDate) + ' ' + endDate.getDate();
+        message += `${getDayString(startDate)}, ${getMonthString(startDate)} ${startDate.getDate()} - `;
+        message += `${getDayString(endDate)}, ${getMonthString(endDate)} ${endDate.getDate()}`;
         this.availabilityMessage = message;
       });
     },
@@ -464,13 +462,13 @@ var v_reservations = new Vue({
       }
     },
     deleteAll_onClick: function(group) {
-      document.getElementById(group.id).style.display = "none";
+      document.getElementById(group.id).style.display = 'none';
       group.days.forEach((reservation) => {
         this.delete_onClick(reservation);
       })
     },
     delete_onClick: function(reservation) {
-      httpDelete('/reservations/' + g_currentItemId + '/' + reservation.date, () => {
+      httpDelete(`/reservations/${g_currentItemId}/${reservation.date}`, () => {
         var index = -1;
         for (var i = 0; i < this.reservations.length; i++) {
           if (this.reservations[i].date == reservation.date) {

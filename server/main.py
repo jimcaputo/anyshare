@@ -15,26 +15,37 @@ app = Flask(__name__)
 CORS(app)
 
 
+#############################################################################
+# For DEBUG execution on local server only.  
+# On prod server, all of these requests should be handled by nginx
+#############################################################################
+
 @app.route('/')
 def http_home():
     return http_web('anyshare.html')
-
 @app.route('/<file_name>')
 def http_root(file_name):
+    if 'favicon.ico' in file_name:
+        return ''
     return http_web(file_name)
-
 @app.route('/web/<file_name>')
 def http_web(file_name):
     f = open('../web/' + file_name, 'r')
     if 'css' in file_name:
         return Response(f.read(), mimetype='text/css')
+    if 'js' in file_name:
+        return Response(f.read(), mimetype='text/javascript')
     return f.read()
-
+@app.route('/images/icons/<file_name>')
+def http_icons(file_name):
+    try:
+        f = open('../web/images/icons/' + file_name, 'rb')
+        return f.read()
+    except Exception as err:
+        print(str(err))
+    return ''
 @app.route('/media/<file_name>')
 def http_media(file_name):
-    if 'favicon.ico' in file_name:
-        return ''
-
     try:
         f = open('../web/media/' + file_name, 'rb')
         return f.read()
@@ -46,6 +57,35 @@ def http_media(file_name):
     except Exception as err:
         print(str(err))
     return ''
+@app.route('/media/items/<file_name>')
+def http_media_items(file_name):
+    try:
+        f = open('../web/media/items/' + file_name, 'rb')
+        return f.read()
+    except Exception as err:
+        print(str(err))
+    try:
+        f = open('../web/media/default.jpg', 'rb')
+        return f.read()
+    except Exception as err:
+        print(str(err))
+    return ''
+@app.route('/media/users/<file_name>')
+def http_media_users(file_name):
+    try:
+        f = open('../web/media/users/' + file_name, 'rb')
+        return f.read()
+    except Exception as err:
+        print(str(err))
+    try:
+        f = open('../web/media/default.jpg', 'rb')
+        return f.read()
+    except Exception as err:
+        print(str(err))
+    return ''
+
+#############################################################################
+#############################################################################
 
 
 # GET - Returns list of items for current user

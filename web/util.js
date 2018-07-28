@@ -1,7 +1,7 @@
 
 function httpGet(url, callback, errorHandler=null) {
   log('httpGet: ' + url);
-  fetch(SERVER + url)
+  fetch(url)
     .then(
       function(response) {
         if (response.status != 200) {
@@ -25,7 +25,7 @@ function httpGet(url, callback, errorHandler=null) {
 
 function httpPost(url, body, callback, errorHandler=null) {
   log('httpPost: ' + url + ' ' + body)
-  fetch(SERVER + url, {
+  fetch(url, {
       method: 'POST',
       headers: {
         'Accept': 'application/json, text/plain, */*',
@@ -54,7 +54,7 @@ function httpPost(url, body, callback, errorHandler=null) {
 
 function httpPatch(url, body, callback, errorHandler=null) {
   log('httpPatch: ' + url + ' ' + body)
-  fetch(SERVER + url, {
+  fetch(url, {
       method: 'PATCH',
       headers: {
         'Accept': 'application/json, text/plain, */*',
@@ -84,7 +84,7 @@ function httpPatch(url, body, callback, errorHandler=null) {
 
 function httpDelete(url, callback, errorHandler=null) {
   log('httpDelete: ' + url);
-  fetch(SERVER + url, {method: 'DELETE'})
+  fetch(url, {method: 'DELETE'})
     .then(
       function(response) {
         if (response.status != 200) {

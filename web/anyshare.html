@@ -13,15 +13,17 @@
   <meta name="description" content="Anything Shared">
   <meta name="keywords" content="anything shared">  
 
-  <link rel="stylesheet" href="spectre.min.css">
-  <link rel="stylesheet" href="spectre-exp.min.css">
-  <link rel="stylesheet" href="spectre-icons.min.css">
+  <link rel="stylesheet" href="/web/spectre.min.css">
+  <link rel="stylesheet" href="/web/spectre-exp.min.css">
+  <link rel="stylesheet" href="/web/spectre-icons.min.css">
 
   <!--
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
   -->
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Knewave">
 
   <style type="text/css">
     .pseudoLink {
@@ -43,14 +45,14 @@
   </style>
 
 
-  <script src="vue.js"></script>
+  <script src="/web/vue.js"></script>
   <!-- <script src="https://unpkg.com/vue"></script> -->
 </head>
 
 <body class="text-center">
   <div class="container grid-xs">
   
-  <h3 style="margin-top: .7rem; margin-bottom: .1rem">AnyShare</h3>
+  <h2 style="margin-top: .7rem; margin-bottom: .1rem; font-family: 'Knewave', cursive">AnyShare</h2>
 
   <div id="navigation" style="display: none">
     <div class="container">
@@ -95,7 +97,7 @@
         <div class="col-2">
           <div id="user_name" style="text-align: right">
             <img v-bind:src="'/media/user.png'" v-on:click="user_onClick()"
-                class="c-hand" style="margin-top: .45rem; height: 25px">
+                class="c-hand" style="margin-top: .6rem; height: 22px">
           </div>
         </div>
         <div class="col-1"></div>
@@ -111,8 +113,6 @@
       <br>
       Please verify your identity
     </p>
-    
-
     <div class="container">
       <div class="columns">
         <div class="col-2"></div>
@@ -196,7 +196,7 @@
       <tbody>
         <tr v-for="item in items" v-on:click="item_onClick(item)">
           <td>
-            <img v-bind:src="'/media/' + item.phone_number_owner + '-' + item.name + '.jpg'" 
+            <img v-bind:src="'/media/items/' + item.phone_number_owner + '-' + item.name + '.jpg'" 
                 style="width:136px; height:80px">
           </td>
           <td>
@@ -346,7 +346,7 @@
               {{ global.displayDate(group.endDate) }}
             </td>
             <td v-on:click="expandCollapse(group)">
-              <img v-bind:src="'/media/' + group.phoneNumber + '.jpg'" style="width:80px; height:106px">
+              <img v-bind:src="'/media/users/' + group.phoneNumber + '.jpg'" style="width:80px; height:106px">
             </td>
             <td v-on:click="expandCollapse(group)">
               {{ group.userName }}
@@ -396,7 +396,7 @@
       <tbody>
         <tr>
           <td>
-            <img v-bind:src="'/media/' + search_user.phone_number + '.jpg'" style="width:80px; height:106px">
+            <img v-bind:src="'/media/users/' + search_user.phone_number + '.jpg'" style="width:80px; height:106px">
           </td>
           <td>{{ search_user.user_name }}</td>
           <td>{{ global.displayPhoneNumber(search_user.phone_number) }}</td>
@@ -423,7 +423,7 @@
       <tbody>
         <tr v-for="user in users">
           <td>
-            <img v-bind:src="'/media/' + user.phone_number + '.jpg'" style="width:80px; height:106px">
+            <img v-bind:src="'/media/users/' + user.phone_number + '.jpg'" style="width:80px; height:106px">
           </td>
           <td>{{ user.user_name }}</td>
           <td>{{ global.displayPhoneNumber(user.phone_number) }}</td>
@@ -459,6 +459,6 @@
 
   </div>
 
-  <script src="util.js"></script>
-  <script src="anyshare.js"></script>
+  <script src="/web/util.js"></script>
+  <script src="/web/anyshare.js"></script>
 </body>
