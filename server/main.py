@@ -26,7 +26,7 @@ def http_home():
 @app.route('/<file_name>')
 def http_root(file_name):
     if 'favicon.ico' in file_name:
-        return ''
+        return http_media('favicon.png')
     return http_web(file_name)
 @app.route('/web/<file_name>')
 def http_web(file_name):
@@ -36,14 +36,6 @@ def http_web(file_name):
     if 'js' in file_name:
         return Response(f.read(), mimetype='text/javascript')
     return f.read()
-@app.route('/images/icons/<file_name>')
-def http_icons(file_name):
-    try:
-        f = open('../web/images/icons/' + file_name, 'rb')
-        return f.read()
-    except Exception as err:
-        print(str(err))
-    return ''
 @app.route('/media/<file_name>')
 def http_media(file_name):
     try:

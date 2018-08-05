@@ -10,8 +10,10 @@
 
   <title>AnyShare</title>
 
-  <meta name="description" content="Anything Shared">
-  <meta name="keywords" content="anything shared">  
+  <meta name="description" content="AnyShare">
+  <meta name="keywords" content="any share">  
+
+  <link rel="manifest" href="/web/manifest.json">
 
   <link rel="stylesheet" href="/web/spectre.min.css">
   <link rel="stylesheet" href="/web/spectre-exp.min.css">
@@ -332,7 +334,7 @@
         
         <template v-for="group in groupedReservations">
           <tr>
-            <td>
+            <td style="padding-left: 5px; padding-right: 0px">
               <div class="accordion">
                 <input :id="group.id" :key="group.id" type="checkbox" name="accordion-checkbox" hidden>
                 <label class="accordion-header c-hand" v-on:click="expandCollapse(group)">

@@ -33,7 +33,7 @@ def create(request):
 
 	if response == 'Success':
 		print('Validation Code: ' + str(validation_code))
-		sms.send('+1' + user['phone_number'], 'Anything Shared Verification Code: {}'.format(validation_code))
+		sms.send('+1' + user['phone_number'], 'AnyShare Verification Code: {}'.format(validation_code))
 		response = {'code': 200}
 	else:
    		response = {'code': 500, 'message': 'users.py:create - ' + response}
