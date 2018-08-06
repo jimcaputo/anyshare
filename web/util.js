@@ -227,6 +227,10 @@ function getCookie(key) {
     return value;
 }
 
+function setCookie(keyValue) {
+  document.cookie = keyValue + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+}
+
 var deleteCookie = function(key) {
     document.cookie = key + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 };

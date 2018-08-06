@@ -52,6 +52,9 @@
 </head>
 
 <body class="text-center">
+  <div id="debug"></div>
+
+
   <div class="container grid-xs">
   
   <h2 style="margin-top: .7rem; margin-bottom: .1rem; font-family: 'Knewave', cursive">AnyShare</h2>
@@ -198,7 +201,7 @@
       <tbody>
         <tr v-for="item in items" v-on:click="item_onClick(item)">
           <td>
-            <img v-bind:src="'/media/items/' + item.phone_number_owner + '-' + item.name + '.jpg'" 
+            <img v-bind:src="'/media/items/' + item.phone_number_owner + '-' + item.name.split(' ').join('') + '.jpg'" 
                 style="width:136px; height:80px">
           </td>
           <td>

@@ -6,8 +6,19 @@ import sms
 
 
 def get(phone_number):
-	if phone_number != None:
-		sql = 'SELECT user_name, phone_number FROM users WHERE phone_number = {}'.format(phone_number)
+	# DEBUG mode only
+	if phone_number == None:
+		rows, response = database.read('SELECT user_name, phone_number FROM users')
+		users = []
+		for row in rows:
+			users.append({
+				'user_name': row[0],
+				'phone_number': row[1]
+			})
+		response = {'code': 200, 'users': users}
+		return response
+
+	sql = 'SELECT user_name, phone_number FROM users WHERE phone_number = {}'.format(phone_number)
 	rows, response = database.read(sql)
 
 	if response == 'Success':

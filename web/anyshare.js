@@ -138,7 +138,7 @@ var v_sign_in = new Vue({
           document.cookie = 'phone_number=' + json.user.phone_number + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
           g_currentPhoneNumber = json.user.phone_number;
 
-          if (json.user.user_name != null) {
+          if (json.user.user_name  &&  json.user.user_name != '') {
             document.cookie = 'user_name=' + json.user.user_name + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
             g_currentUserName = json.user.user_name;
           }
@@ -571,6 +571,21 @@ var v_info_dialog = new Vue({
 });
 
 
+if (window.location.search.indexOf('debug') > -1) {
+  httpGet('/users', function(json) {
+    var debug = document.getElementById('debug');
+    for (var i = 0; i < json.users.length; i++) {
+      var user_name = json.users[i].user_name;
+      if (user_name != null) {
+        var phone_number = json.users[i].phone_number;
+        debug.innerHTML += `<input type="button" value="${user_name}" 
+            onclick="setCookie('user_name=${user_name}'); setCookie('phone_number=${phone_number}');"><br>`;
+      }
+    }
+  });
+}
+else {
+
 if (g_currentPhoneNumber == null) {
   updateAppState(APP_STATE.SIGN_IN);
 }
@@ -601,6 +616,8 @@ else {
       updateAppState(APP_STATE.ITEM_LIST);
     }
   });
+}
+
 }
 
 
