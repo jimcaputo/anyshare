@@ -280,7 +280,8 @@ var v_item_view = new Vue({
     date: '',
     days: 0,
     available: false,
-    availabilityMessage: ''
+    availabilityMessage: '',
+    dailyNotification: false
   },
   methods: {
     show: function() {
@@ -304,6 +305,10 @@ var v_item_view = new Vue({
         } else {
           this.active_user = false;
         }
+      });
+
+      httpGet(`/notifications/${g_currentItemId}/${g_currentPhoneNumber}`, (json) => {
+        this.dailyNotification = json.notifications.daily;
       });
     },
     activate_onClick: function() {
@@ -398,6 +403,14 @@ var v_item_view = new Vue({
         this.available = '';
         v_info_dialog.show('Confirmation', 'Reserved!', true);
       });
+    },
+    dailyNotification_onChange: function() {
+      var notifications = {
+        item_id: g_currentItemId,
+        phone_number: g_currentPhoneNumber,
+        daily_notification: this.dailyNotification
+      }
+      httpPatch('/notifications', JSON.stringify(notifications), () => {});
     },
     manageUsers_onClick: function() {
       httpGet('/items_users/' + g_currentItemId, (json) => {

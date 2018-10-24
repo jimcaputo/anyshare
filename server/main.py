@@ -3,10 +3,12 @@ from flask import Flask
 from flask import request
 from flask import Response
 from flask_cors import CORS
+import threading
 
 import database
 import items
 import items_users
+import notifications
 import reservations
 import status
 import users
@@ -199,6 +201,25 @@ def http_items_users_delete(item_id, phone_number):
     return json.dumps(response), int(response['code'])
 
 
+# GET - Returns notifications for a given item_id and phone_number
+@app.route('/notifications/<item_id>/<phone_number>', methods=['GET'])
+def http_notifications_get(item_id, phone_number):
+    try:
+        response = notifications.get(item_id, phone_number)
+    except Exception as err:
+        response = {'code': 500, 'message': 'main.py:notifications_get - ' + str(err)}
+    return json.dumps(response), int(response['code'])
+
+# POST - Sets value for notifications
+@app.route('/notifications', methods=['PATCH'])
+def http_notifications_patch():
+    try:
+        response = notifications.update(request)
+    except Exception as err:
+        response = {'code': 500, 'message': 'main.py:notifications_post - ' + str(err)}
+    return json.dumps(response), int(response['code'])
+
+
 # GET - Returns list of users
 @app.route('/users', methods=['GET'])       # Returns all users - should only be used in debug mode
 @app.route('/users/<phone_number>', methods=['GET'])
@@ -230,9 +251,8 @@ def http_users_update():
     return json.dumps(response), int(response['code'])
 
 
-
-# This is used when running locally
 if __name__ == '__main__':
+    threading.Thread(target=notifications.thread).start()
     app.run(host='0.0.0.0', port=8080, debug=True)
     #app.run(host='127.0.0.1', port=8080, debug=True)
 

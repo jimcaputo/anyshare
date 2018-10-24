@@ -315,6 +315,14 @@
       </div>
     </div>
 
+    <div class="divider" style="margin-top: 1.5rem" data-content="Notifications"></div>
+    <div style="margin-top: 1rem">
+      <label class="form-switch">
+        <input v-model="dailyNotification" v-on:change="dailyNotification_onChange" type="checkbox">
+        <i class="form-icon"></i>Daily Status (8am)
+      </label>
+    </div>
+
     <div class="divider" style="margin-top: 1.5rem" data-content="Users"></div>
     <div style="margin-top: 1rem">
       <span v-on:click="manageUsers_onClick()" class="pseudoLink">Manage Users</span>

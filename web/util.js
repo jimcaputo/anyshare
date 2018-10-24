@@ -108,7 +108,7 @@ function httpDelete(url, callback, errorHandler=null) {
 
 function formatDate(date) {
   var result = date.getFullYear() + '-';
-  if (date.getMonth() < 10) {
+  if (date.getMonth() < 9) {  // getMonth returns 0-11
     result += '0';
   } 
   result += date.getMonth() + 1 + '-';
