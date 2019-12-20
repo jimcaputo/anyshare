@@ -19,7 +19,7 @@ def insert_update_delete(sql):
 		db.rollback()
 		response = 'database.py:insert_update_delete - ' + str(err)
 		print(response)
-		
+
 	db.close()
 	return response
 
@@ -37,12 +37,17 @@ def read(sql):
 	except Exception as err:
 		response = 'database.py:read - ' + str(err)
 		print(response)
-	
+
 	db.close()
 	return rows, response
 
 
 '''
+
+CREATE USER 'anyshare'@'localhost' IDENTIFIED BY 'anyshare_password';
+GRANT ALL PRIVILEGES ON *.* TO 'anyshare'@'localhost' WITH GRANT OPTION;
+
+CREATE DATABASE anyshare;
 
 DELIMITER $$
 CREATE PROCEDURE create_user(p_phone_number VARCHAR(20), p_validation_code VARCHAR(10))

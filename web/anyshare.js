@@ -45,7 +45,7 @@ if ('serviceWorker' in navigator) {
 
 function updateAppState(appState, updateBrowserState = true) {
   v_navigation.app_state = appState;
-  
+
   v_sign_in.$el.style.display = 'none';
   v_item_view.$el.style.display = 'none';
   v_item_list.$el.style.display = 'none';
@@ -60,7 +60,7 @@ function updateAppState(appState, updateBrowserState = true) {
     v_navigation.$el.style.display = 'none';
   }
   else {
-    v_navigation.$el.style.display = 'block'; 
+    v_navigation.$el.style.display = 'block';
   }
 
   if (appState == APP_STATE.SIGN_IN) {
@@ -151,7 +151,7 @@ var v_sign_in = new Vue({
             updateAppState(APP_STATE.ITEM_LIST);
           });
         });
-      }, 
+      },
       (error) => {
         if (error == '404') {
           v_info_dialog.show('Verification Failure', 'Incorrect Verification Code', true);
@@ -181,7 +181,7 @@ var v_user_dialog = new Vue({
         g_currentUserName = this.user_name;
         document.getElementById('user_dialog').classList.remove('active');
       });
-      
+
     },
     cancel_onClick: function() {
       document.getElementById('user_dialog').classList.remove('active');
@@ -330,7 +330,7 @@ var v_item_view = new Vue({
       else if (this.duration == 'hour8') {
         endTime.setTime(startTime.getTime() + 8 * 60 * 60 * 1000);
       }
-      
+
       var json = {
         item_id: g_currentItemId,
         active: 'true',
@@ -370,7 +370,7 @@ var v_item_view = new Vue({
       var startDate = getLocaleDate(this.date);
       var endDate = new Date(startDate);
       // Calculate the end date for the reservation.  We subtract 1 because if only 1 day, the text should
-      // read:  "Apr 1 - Apr 1"  Then multiply to get the number of seconds.  
+      // read:  "Apr 1 - Apr 1"  Then multiply to get the number of seconds.
       endDate.setTime(endDate.getTime() + (this.days - 1) * 24 * 60 * 60 * 1000);
 
       var url = `/reservations/${g_currentItemId}/${formatDate(startDate)}/${formatDate(endDate)}`;
@@ -464,7 +464,7 @@ var v_reservations = new Vue({
         }
         i = j - 1;
         this.groupedReservations[index].endDate = this.reservations[i].date;
-        this.groupedReservations[index].id = 'id' + 
+        this.groupedReservations[index].id = 'id' +
           this.groupedReservations[index].startDate + this.groupedReservations[index].endDate;
 
         // Reset the arrow to original state.
@@ -472,7 +472,7 @@ var v_reservations = new Vue({
         if (checkbox) {
           checkbox.checked = false;
         }
-      } 
+      }
       this.$el.style.display = 'block';
     },
     expandCollapse: function(group) {
@@ -535,7 +535,7 @@ var v_manage_users = new Vue({
       },
       (error) => {
         if (error == '404') {
-          v_info_dialog.show('User Search', 'Phone number not found', true); 
+          v_info_dialog.show('User Search', 'Phone number not found', true);
         }
       });
     },
@@ -549,7 +549,7 @@ var v_manage_users = new Vue({
         httpGet('/items_users/' + g_currentItemId, (json) => {
           this.users = json.users;
         });
-      }) 
+      })
     },
     remove_onClick: function(user) {
       httpDelete('/items_users/' + g_currentItemId + '/' + user.phone_number, () => {
@@ -572,8 +572,8 @@ var v_info_dialog = new Vue({
       this.message = message;
       document.getElementById('info_dialog').classList.add('active');
       if (timeout) {
-        setTimeout(function() { 
-          document.getElementById('info_dialog').classList.remove('active'); 
+        setTimeout(function() {
+          document.getElementById('info_dialog').classList.remove('active');
         }, 2500);
       }
     },
@@ -591,7 +591,7 @@ if (window.location.search.indexOf('debug') > -1) {
       var user_name = json.users[i].user_name;
       if (user_name != null) {
         var phone_number = json.users[i].phone_number;
-        debug.innerHTML += `<input type="button" value="${user_name}" 
+        debug.innerHTML += `<input type="button" value="${user_name}"
             onclick="setCookie('user_name=${user_name}'); setCookie('phone_number=${phone_number}');"><br>`;
       }
     }
@@ -605,12 +605,12 @@ if (g_currentPhoneNumber == null) {
 else {
   if (g_currentUserName == null) {
     v_user_dialog.show();
-  } 
+  }
 
-  // Start by getting the list of items that the user has access to.  
+  // Start by getting the list of items that the user has access to.
   httpGet('/items/' + g_currentPhoneNumber, function(json) {
     v_item_list.items = json.items;
-      
+
     var user_default_item = null;
     for (var i = 0; i < json.items.length; i++) {
       if (json.items[i].user_default == true) {

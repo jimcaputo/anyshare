@@ -18,7 +18,7 @@ CORS(app)
 
 
 #############################################################################
-# For DEBUG execution on local server only.  
+# For DEBUG execution on local server only.
 # On prod server, all of these requests should be handled by nginx
 #############################################################################
 
@@ -112,7 +112,7 @@ def http_items_delete(item_id):
     return json.dumps(response), int(response['code'])
 
 
-# Returns the current status (active / inactive) of the item 
+# Returns the current status (active / inactive) of the item
 @app.route('/status/<item_id>', methods=['GET'])
 def http_status_get(item_id):
     try:
@@ -252,9 +252,7 @@ def http_users_update():
 
 
 if __name__ == '__main__':
-    threading.Thread(target=notifications.thread).start()
     app.run(host='0.0.0.0', port=8080, debug=True)
-    #app.run(host='127.0.0.1', port=8080, debug=True)
 
 
 # Command line to run with gunicorn

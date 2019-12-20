@@ -11,7 +11,7 @@
   <title>AnyShare</title>
 
   <meta name="description" content="AnyShare">
-  <meta name="keywords" content="any share">  
+  <meta name="keywords" content="any share">
 
   <link rel="manifest" href="/web/manifest.json">
 
@@ -56,7 +56,7 @@
 
 
   <div class="container grid-xs">
-  
+
   <h2 style="margin-top: .7rem; margin-bottom: .1rem; font-family: 'Knewave', cursive">AnyShare</h2>
 
   <div id="navigation" style="display: none">
@@ -72,13 +72,13 @@
           <div v-else-if="app_state == 'ITEM_LIST'">
             <ul class="breadcrumb">
               <li class="breadcrumb-item">Items</li>
-            </ul> 
+            </ul>
           </div>
           <div v-else-if="app_state == 'ITEM_VIEW'">
             <ul class="breadcrumb">
               <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_LIST')" class="pseudoLink">Items</span></li>
               <li class="breadcrumb-item"><span v-on:click="onClick('ITEM_VIEW')">{{ global.currentItemName() }}</span></li>
-            </ul> 
+            </ul>
           </div>
           <div v-else-if="app_state == 'RESERVATIONS'">
             <ul class="breadcrumb">
@@ -87,7 +87,7 @@
                 <span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">{{ global.currentItemName() }}</span>
               </li>
               <li class="breadcrumb-item">Reservations</li>
-            </ul> 
+            </ul>
           </div>
           <div v-else-if="app_state == 'MANAGE_USERS'">
             <ul class="breadcrumb">
@@ -96,7 +96,7 @@
                 <span v-on:click="onClick('ITEM_VIEW')" class="pseudoLink">{{ global.currentItemName() }}</span>
               </li>
               <li class="breadcrumb-item">Users</li>
-            </ul> 
+            </ul>
           </div>
         </div>
         <div class="col-2">
@@ -137,7 +137,7 @@
 
     <div v-if="show_verify">
       <div class="divider" style="margin-top: 1.2rem; margin-bottom: .8rem"></div>
-   
+
       <div class="container">
         <div class="columns">
           <div class="col-2"></div>
@@ -201,7 +201,7 @@
       <tbody>
         <tr v-for="item in items" v-on:click="item_onClick(item)">
           <td>
-            <img v-bind:src="'/media/items/' + item.phone_number_owner + '-' + item.name.split(' ').join('') + '.jpg'" 
+            <img v-bind:src="'/media/items/' + item.phone_number_owner + '-' + item.name.split(' ').join('') + '.jpg'"
                 style="width:136px; height:80px">
           </td>
           <td>
@@ -219,7 +219,7 @@
         </tr>
       </tbody>
     </table>
-    
+
     <div id="item_delete_dialog" class="modal modal-sm">
       <div class="modal-overlay"></div>
       <div class="modal-container">
@@ -240,7 +240,7 @@
     </div>
 
     <div class="divider" style="margin-top: 2.5rem; margin-bottom: 1.5rem" data-content="Create New Item"></div>
- 
+
     <div class="input-group" style="justify-content: center">
       <input style="width: 150px" v-model="item_create_name" type="text" maxlength="25" placeholder="Item Name">
       <button v-on:click="create_onClick()" class="btn btn-primary">Create</button>
@@ -285,9 +285,9 @@
         </button>
       </div>
     </div>
-    
+
     <div class="divider" style="margin-top: 1.5rem; margin-bottom: 1.5rem" data-content="Reservations"></div>
- 
+
     <div class="container">
       <div class="columns text-left">
         <div class="col-2"></div>
@@ -300,7 +300,23 @@
         <div class="col-2"></div>
         <div class="col-4">Number of Days</div>
         <div class="col-5">
-          <input v-on:change="updateAvailability()" style="width: 40px" v-model="days" type="number" min="0">
+          <select v-on:change="updateAvailability()" style="width: 40px" v-model="days">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+          </select>
         </div>
       </div>
       <div v-if="days > 0" style="margin-top: .4rem">
@@ -330,7 +346,7 @@
   </div>
 
   <div id="reservations" style="display:none">
-    
+
     <table class="table table-hover c-hand">
       <thead>
         <tr>
@@ -342,7 +358,7 @@
         </tr>
       </thead>
       <tbody>
-        
+
         <template v-for="group in groupedReservations">
           <tr>
             <td style="padding-left: 5px; padding-right: 0px">
@@ -423,7 +439,7 @@
     </table>
 
     <div class="divider" style="margin-top: 2.5rem" data-content="Existing Users"></div>
-    
+
     <table class="table table-striped">
       <thead>
         <tr>

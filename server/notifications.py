@@ -44,7 +44,7 @@ def update(request):
 # Gets the next time to wake up.  Currently configured to wake up every morning at 8am.
 def get_wakeup_time():
   wakeup_time = datetime.now()
-  if wakeup_time.hour > 8:
+  if wakeup_time.hour >= 8:
     wakeup_time = wakeup_time + timedelta(days=1)
   wakeup_time = wakeup_time.replace(hour=8, minute=0, second=0)
   return wakeup_time
@@ -81,10 +81,13 @@ def send_notifications():
       sms.send('+1' + phone_number, message)
 
 
-def thread():
+if __name__ == '__main__':
   while 1:
-    wakeup_time = get_wakeup_time()
-    sleep_duration = wakeup_time.timestamp() - datetime.now().timestamp()
-    time.sleep(sleep_duration)
+    print('Wakeup Time: ' + str(get_wakeup_time()))
+    duration_seconds = get_wakeup_time().timestamp() - datetime.now().timestamp()
+    print('Time (hours) to sleep: ' + str(duration_seconds / 60 / 60))
+    time.sleep(duration_seconds)
     send_notifications()
+
+    time.sleep(60)
 
